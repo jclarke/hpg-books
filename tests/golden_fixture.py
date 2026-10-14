@@ -34,25 +34,25 @@ class FrozenDate(_real_date):
 
 # Modules that call date.today(). Personal-mode modules are added when present.
 FROZEN_MODULES = (
-    "hpbooks.reports",
-    "hpbooks.analytics",
-    "hpbooks.api",
-    "hpbooks.webargs",
-    "hpbooks.accounts_admin",
-    "hpbooks.personal.analytics",
-    "hpbooks.payments",
+    "hpgbooks.reports",
+    "hpgbooks.analytics",
+    "hpgbooks.api",
+    "hpgbooks.webargs",
+    "hpgbooks.accounts_admin",
+    "hpgbooks.personal.analytics",
+    "hpgbooks.payments",
 )
 
 
 # Modules that imported db.now_iso by name; timestamps land in created_at columns.
 NOW_MODULES = (
-    "hpbooks.db",
-    "hpbooks.balances",
-    "hpbooks.classify",
-    "hpbooks.importer",
-    "hpbooks.seed_rules",
-    "hpbooks.vendors",
-    "hpbooks.capitalone",
+    "hpgbooks.db",
+    "hpgbooks.balances",
+    "hpgbooks.classify",
+    "hpgbooks.importer",
+    "hpgbooks.seed_rules",
+    "hpgbooks.vendors",
+    "hpgbooks.capitalone",
 )
 FROZEN_NOW = "2026-09-30T12:00:00+00:00"
 
@@ -75,8 +75,8 @@ def set_env(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv("HPBOOKS_DB", str(tmp_path / "books.db"))
     monkeypatch.delenv("HPBOOKS_KEY_FILE", raising=False)
     # Never read the prior-analysis seed file in tests.
-    monkeypatch.setenv("HPBOOKS_SEED_CSV", str(tmp_path / "no-seed.csv"))
-    from hpbooks.classify import reset_seed_cache
+    monkeypatch.setenv("HPGBOOKS_SEED_CSV", str(tmp_path / "no-seed.csv"))
+    from hpgbooks.classify import reset_seed_cache
 
     reset_seed_cache()
 
@@ -165,7 +165,7 @@ def _write_feed(path: Path, account: str, txns: list[dict]) -> Path:
 
 
 def run_cli(argv: list[str]) -> tuple[int, str, str]:
-    from hpbooks.cli import main
+    from hpgbooks.cli import main
 
     out, err = io.StringIO(), io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
@@ -175,7 +175,7 @@ def run_cli(argv: list[str]) -> tuple[int, str, str]:
 
 def build_business_ledger(tmp_path: Path) -> None:
     """Import the fake feeds, classify by hand, set anchors, and merge vendors."""
-    from hpbooks.db import init_db
+    from hpgbooks.db import init_db
 
     init_db()
     inbox = tmp_path / "golden-inbox"
@@ -291,7 +291,7 @@ SESSION_CASE = "api_session.json"
 
 def capture_outputs() -> dict[str, bytes]:
     """Every golden output as bytes, keyed by file name."""
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     outputs: dict[str, bytes] = {}
     for name, argv in CLI_CASES.items():

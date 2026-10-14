@@ -8,10 +8,10 @@ import pytest
 from golden_fixture import run_cli
 from personal_helpers import make_db
 
-import hpbooks.db as hpdb
-from hpbooks.access import clear_passphrase_cache, reset_lockout
-from hpbooks.db import HpbooksError, connect
-from hpbooks.personal import offers
+import hpgbooks.db as hpdb
+from hpgbooks.access import clear_passphrase_cache, reset_lockout
+from hpgbooks.db import HpgbooksError, connect
+from hpgbooks.personal import offers
 
 P = "mode=personal"
 SECRET = "correct-horse-battery-staple"
@@ -89,7 +89,7 @@ def test_parse_money(text, cents):
 
 @pytest.mark.parametrize("bad", ["", "abc", "1.234", "-5", None, True, "1e5"])
 def test_parse_money_refuses(bad):
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         offers.parse_money(bad)
 
 
@@ -120,7 +120,7 @@ def test_validation(db, patch, message):
     body = {**OFFER, **patch}
     if body.get("amount") is None:
         body.pop("amount")
-    with connect() as conn, pytest.raises(HpbooksError, match=message):
+    with connect() as conn, pytest.raises(HpgbooksError, match=message):
         offers.create_offer(conn, body, actor="test")
 
 
@@ -139,7 +139,7 @@ def test_create_update_delete_with_audit(db):
         assert cleared["monthly_payment_cents"] is None and cleared["expires_on"] is None
         offers.delete_offer(conn, offer["id"], actor="test")
         assert offers.list_offers(conn) == []
-        with pytest.raises(HpbooksError, match="no such offer"):
+        with pytest.raises(HpgbooksError, match="no such offer"):
             offers.update_offer(conn, offer["id"], {"apr": 1}, actor="test")
         actions = [row[0] for row in conn.execute("SELECT action FROM audit_log WHERE action = 'debt_offer' ORDER BY id")]
         assert len(actions) == 4
@@ -163,7 +163,7 @@ def test_offers_never_touch_the_ledger(db):
 @pytest.fixture()
 def client(db):
     clear_passphrase_cache()
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     yield create_app().test_client()
     reset_lockout()
@@ -214,10 +214,10 @@ def test_api_mode_gating_and_csrf(client):
 
 
 def test_api_needs_sign_in_off_loopback(client, monkeypatch):
-    from hpbooks.cli import main
-    from hpbooks.web import create_app
+    from hpgbooks.cli import main
+    from hpgbooks.web import create_app
 
-    monkeypatch.setenv("HPBOOKS_NEW_PASSPHRASE", SECRET)
+    monkeypatch.setenv("HPGBOOKS_NEW_PASSPHRASE", SECRET)
     assert main(["web-passphrase", "set"]) == 0
     clear_passphrase_cache()
     app = create_app()

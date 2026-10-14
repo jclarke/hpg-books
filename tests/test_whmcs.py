@@ -8,9 +8,9 @@ import subprocess
 
 import pytest
 
-from hpbooks.cli import main
-from hpbooks.db import MIGRATIONS, HpbooksError, _apply_migrations, connect, init_db
-from hpbooks.whmcs import (
+from hpgbooks.cli import main
+from hpgbooks.db import MIGRATIONS, HpgbooksError, _apply_migrations, connect, init_db
+from hpgbooks.whmcs import (
     SOURCE_COLUMNS,
     Tunnels,
     build_select,
@@ -70,7 +70,7 @@ def test_select_names_columns_and_skips_missing_ones():
 
 
 def test_select_refuses_unknown_tables_and_sensitive_columns():
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         build_select("tbladmins", ("id",), {"id"})
     sql, present = build_select("tblclients", ("id", "password", "address1", "phonenumber"), {"id", "password", "address1", "phonenumber"})
     assert present == ["id"]
@@ -210,7 +210,7 @@ def test_one_brand_failing_does_not_stop_the_others(env):
 
 def test_failed_write_rolls_back_that_brand(env, monkeypatch):
     _sync({"BrandA": FakeSource()}, ["BrandA"])
-    import hpbooks.whmcs as module
+    import hpgbooks.whmcs as module
 
     def boom(*_args, **_kwargs):
         raise RuntimeError("disk full")
@@ -240,7 +240,7 @@ def test_secret_file_must_be_private(env):
     path = env / "whmcs_a.secret"
     path.write_text(FAKE_PASSWORD + "\n")
     os.chmod(path, 0o644)
-    with pytest.raises(HpbooksError) as err:
+    with pytest.raises(HpgbooksError) as err:
         read_secret("whmcs_a.secret")
     assert FAKE_PASSWORD not in str(err.value)
     os.chmod(path, 0o600)
@@ -248,7 +248,7 @@ def test_secret_file_must_be_private(env):
 
 
 def test_missing_secret_is_a_clean_error(env):
-    with pytest.raises(HpbooksError, match="missing"):
+    with pytest.raises(HpgbooksError, match="missing"):
         read_secret("whmcs_b.secret")
 
 
@@ -304,11 +304,11 @@ def test_tunnels_close_what_they_opened():
 def test_tunnels_retry_then_give_up():
     procs = []
     tunnels = Tunnels(attempts=3, popen=lambda *a, **k: procs.append(FakeProc(exits=True)) or procs[-1], is_open=lambda port: False, sleep=lambda s: None)
-    with pytest.raises(HpbooksError, match="after 3 attempts"):
+    with pytest.raises(HpgbooksError, match="after 3 attempts"):
         tunnels.ensure(3307, "billing.example.test")
     assert len(procs) == 3
     # A second brand on the same port fails fast instead of retrying again.
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         tunnels.ensure(3307, "billing.example.test")
     assert len(procs) == 3
 
@@ -316,7 +316,7 @@ def test_tunnels_retry_then_give_up():
 def test_ssh_command_matches_the_documented_options():
     cmd = ssh_command(3307, "billing.example.test")
     assert "-f" not in cmd
-    assert cmd[-1] == "hpbooks@billing.example.test"
+    assert cmd[-1] == "hpgbooks@billing.example.test"
     for option in ("IdentitiesOnly=yes", "BatchMode=yes", "ExitOnForwardFailure=yes", "HostKeyAlgorithms=+ssh-rsa", "PubkeyAcceptedAlgorithms=+ssh-rsa"):
         assert option in cmd
     assert "3307:127.0.0.1:3306" in cmd
@@ -339,12 +339,12 @@ def test_cli_sync_reports_errors_without_secrets(env, monkeypatch, capsys):
     path = env / "whmcs_a.secret"
     path.write_text(FAKE_PASSWORD)
     os.chmod(path, 0o600)
-    import hpbooks.whmcs as module
+    import hpgbooks.whmcs as module
 
     class Refused:
         def __init__(self, brand):
             read_secret(brand["secret"])
-            raise HpbooksError("could not connect to BrandA WHMCS: (2003, connection refused)")
+            raise HpgbooksError("could not connect to BrandA WHMCS: (2003, connection refused)")
 
     monkeypatch.setattr(module, "MySQLSource", Refused)
     assert main(["whmcs", "sync", "--brand", "branda", "--no-tunnel"]) == 1

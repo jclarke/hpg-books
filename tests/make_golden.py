@@ -17,7 +17,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent.parent))
-# The fake test config, as in conftest.py, before hpbooks is imported.
+# The fake test config, as in conftest.py, before hpgbooks is imported.
 os.environ["HPBOOKS_CONFIG"] = str(Path(__file__).parent / "fixtures" / "config.test.toml")
 
 from golden_fixture import GOLDEN_DIR, build_business_ledger, capture_outputs, freeze_today, set_env

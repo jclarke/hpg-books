@@ -22,13 +22,13 @@ pytestmark = pytest.mark.skipif(shutil.which("rg") is None, reason="ripgrep not 
 
 
 def _env(tmp_path: Path, **extra: str) -> dict[str, str]:
-    env = {k: v for k, v in os.environ.items() if not k.startswith(("GIT_", "PUBLISH_", "HPBOOKS_PRIVACY"))}
+    env = {k: v for k, v in os.environ.items() if not k.startswith(("GIT_", "PUBLISH_", "HPGBOOKS_PRIVACY", "HPBOOKS_PRIVACY"))}
     gitconfig = tmp_path / "gitconfig"
     gitconfig.touch()
     env.update(
         GIT_CONFIG_GLOBAL=str(gitconfig),
         GIT_CONFIG_NOSYSTEM="1",
-        HPBOOKS_PRIVACY_DIR=str(tmp_path / "priv"),
+        HPGBOOKS_PRIVACY_DIR=str(tmp_path / "priv"),
         PUBLISH_AUTHOR_NAME=PUBLIC_NAME,
         PUBLISH_AUTHOR_EMAIL=PUBLIC_EMAIL,
     )
@@ -159,7 +159,7 @@ def test_planted_forbidden_term_aborts(setup):
 
 def test_missing_deny_lists_abort(setup):
     s = setup
-    env = dict(s["env"], HPBOOKS_PRIVACY_DIR=str(s["tmp"] / "nowhere"))
+    env = dict(s["env"], HPGBOOKS_PRIVACY_DIR=str(s["tmp"] / "nowhere"))
     proc = _publish(s, "--push", env=env)
     assert proc.returncode == 3, proc.stdout + proc.stderr
     assert _public_log(s) == []

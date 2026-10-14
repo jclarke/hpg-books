@@ -9,8 +9,8 @@ import shutil
 import pytest
 
 from golden_fixture import freeze_today, run_cli, set_env
-from hpbooks.access import clear_passphrase_cache, reset_lockout
-from hpbooks.db import connect
+from hpgbooks.access import clear_passphrase_cache, reset_lockout
+from hpgbooks.db import connect
 from fake_accounts import BANK
 from personal_fake import CARD_A, CHECKING, MORTGAGE
 from personal_helpers import build_full_ledger
@@ -36,7 +36,7 @@ def client(template, tmp_path, monkeypatch):
     set_env(monkeypatch, tmp_path)
     freeze_today(monkeypatch)
     clear_passphrase_cache()
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     yield create_app().test_client()
     reset_lockout()
@@ -199,10 +199,10 @@ def test_writes_are_audited_and_need_csrf(client):
 
 
 def test_sign_in_required_on_tailnet(client, monkeypatch):
-    from hpbooks.cli import main
-    from hpbooks.web import create_app
+    from hpgbooks.cli import main
+    from hpgbooks.web import create_app
 
-    monkeypatch.setenv("HPBOOKS_NEW_PASSPHRASE", SECRET)
+    monkeypatch.setenv("HPGBOOKS_NEW_PASSPHRASE", SECRET)
     assert main(["web-passphrase", "set"]) == 0
     clear_passphrase_cache()
     app = create_app()
@@ -279,7 +279,7 @@ def _fill(rule: str, mode: str) -> str | None:
 
 
 def test_leak_walk_every_get_route(client):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     with connect(readonly=True) as conn:
         personal_ids = _ids(conn, "personal")

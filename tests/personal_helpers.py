@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from golden_fixture import freeze_today, set_env
 
-from hpbooks.db import connect, init_db, now_iso
+from hpgbooks.db import connect, init_db, now_iso
 
 
 def make_db(tmp_path, monkeypatch) -> None:
@@ -36,7 +36,7 @@ def add_txn(conn, txn_id: str, account_id: str, day: str, cents: int, name: str,
 
 
 def classify_all(conn) -> None:
-    from hpbooks.personal.classify import apply_transfers, classify_new_personal
+    from hpgbooks.personal.classify import apply_transfers, classify_new_personal
 
     ids = [row["id"] for row in conn.execute(
         "SELECT t.id FROM transactions t JOIN accounts a ON a.id = t.account_id WHERE a.scope = 'personal'"
@@ -46,7 +46,7 @@ def classify_all(conn) -> None:
 
 
 def business_class(conn, txn_id: str, tag: str, category: str) -> None:
-    from hpbooks.classify import write_classification
+    from hpgbooks.classify import write_classification
 
     write_classification(conn, txn_id, tag, category, "manual", 1.0, "", None, overwrite_manual=True, actor="test", audit_write=False)
 

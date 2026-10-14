@@ -16,7 +16,7 @@ def client(tmp_path, monkeypatch):
     payload = tmp_path / "accounts.json"
     payload.write_text(accounts_payload(), encoding="utf-8")
     assert run_cli(["accounts", "discover", str(payload), "--as-of", "2026-09-30"])[0] == 0
-    from hpbooks.db import connect
+    from hpgbooks.db import connect
 
     with connect() as conn:
         conn.execute(
@@ -26,7 +26,7 @@ def client(tmp_path, monkeypatch):
             """,
             (CHECKING,),
         )
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     return create_app().test_client()
 

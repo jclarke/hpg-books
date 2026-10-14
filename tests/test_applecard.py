@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 from personal_helpers import add_account, add_txn, make_db
 
-from hpbooks import applecard
-from hpbooks.accounts_admin import discover
-from hpbooks.db import connect
+from hpgbooks import applecard
+from hpgbooks.accounts_admin import discover
+from hpgbooks.db import connect
 
 HEADER = "Transaction Date,Clearing Date,Description,Merchant,Category,Type,Amount (USD),Purchased By\n"
 # 2099-01: purchases, an identical twin pair and interest; 2099-02: a payment and a refund
@@ -170,7 +170,7 @@ def test_import_is_idempotent_and_classified(db):
 
 
 def test_account_id_comes_from_the_config(db):
-    from hpbooks import config as hpconfig
+    from hpgbooks import config as hpconfig
 
     assert applecard.account_id() == "manual-apple-card"  # the default
     hpconfig.override(importers=hpconfig.ImportersConfig(applecard_account_id="manual-sample-card"))
@@ -228,7 +228,7 @@ def test_opening_anchor_and_balance_check(db):
         notes = applecard.ensure_opening_anchor(conn, account_id, parsed, [jan])
         assert notes and applecard.ensure_opening_anchor(conn, account_id, parsed, [jan]) == []
         applecard.import_rows(conn, account_id, parsed)
-        from hpbooks.balances import snapshot_for
+        from hpgbooks.balances import snapshot_for
 
         # 1,000.00 owed + 70 + 20 + 12 + 2 - 20 - 100 ... the ledger sum drives the balance
         owed = 100000 - sum(r.amount_cents for r in parsed)

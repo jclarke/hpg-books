@@ -19,7 +19,8 @@ id_rsa*
 config/local.toml
 config/*.local.*
 
-# Revision marker written by `hpbooks update apply` on zip installs
+# Revision marker written by `hpgbooks update apply` on zip installs
+.hpgbooks-revision
 .hpbooks-revision
 
 # Tooling

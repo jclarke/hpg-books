@@ -24,9 +24,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from hpbooks import payments as pay  # noqa: E402
-from hpbooks.db import HpbooksError, audit, connect, format_money  # noqa: E402
-from hpbooks.scope import all_accounts, label  # noqa: E402
+from hpgbooks import payments as pay  # noqa: E402
+from hpgbooks.db import HpgbooksError, audit, connect, format_money  # noqa: E402
+from hpgbooks.scope import all_accounts, label  # noqa: E402
 
 ALIASES = {
     "account": ("account", "name", "card"),
@@ -50,7 +50,7 @@ def read_rows(path: Path) -> list[dict]:
         data = json.loads(text)
         raw = data.get("rows") if isinstance(data, dict) else data
         if not isinstance(raw, list):
-            raise HpbooksError("JSON input must be a list of rows")
+            raise HpgbooksError("JSON input must be a list of rows")
     else:
         raw = list(csv.DictReader(text.splitlines()))
     rows = []
@@ -148,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
             report = sync(conn, rows, as_of=as_of, source=args.source, dry_run=args.dry_run)
             if args.dry_run:
                 conn.rollback()
-    except (HpbooksError, OSError, ValueError) as exc:
+    except (HpgbooksError, OSError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     for key in ("updated", "unchanged", "skipped", "unmatched", "conflicts", "balance_diffs"):

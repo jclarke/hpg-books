@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from hpbooks.access import (
+from hpgbooks.access import (
     IDLE_SECONDS,
     add_allowed_hosts,
     allowed_hosts_path,
@@ -22,8 +22,8 @@ from hpbooks.access import (
     read_allowed_hosts,
     reset_lockout,
 )
-from hpbooks.cli import main
-from hpbooks.db import HpbooksError, connect, init_db
+from hpgbooks.cli import main
+from hpgbooks.db import HpgbooksError, connect, init_db
 
 KEY = "ab" * 32
 SECRET = "correct-horse-battery"
@@ -36,8 +36,8 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setenv("HPBOOKS_KEY", KEY)
     monkeypatch.setenv("HPBOOKS_DB", str(tmp_path / "books.db"))
     monkeypatch.delenv("HPBOOKS_KEY_FILE", raising=False)
-    monkeypatch.delenv("HPBOOKS_ALLOWED_HOSTS", raising=False)
-    monkeypatch.delenv("HPBOOKS_NEW_PASSPHRASE", raising=False)
+    monkeypatch.delenv("HPGBOOKS_ALLOWED_HOSTS", raising=False)
+    monkeypatch.delenv("HPGBOOKS_NEW_PASSPHRASE", raising=False)
     init_db()
     return tmp_path
 
@@ -52,7 +52,7 @@ def _reset_auth_state():
 
 
 def _client(extra_hosts=None):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     app = create_app()
     if extra_hosts is not None:
@@ -82,11 +82,11 @@ def test_host_match_is_exact():
     assert not hosts_match("notbooks.example", "books.example")
     assert not hosts_match("evil.example:8765", "books.example")
     assert not hosts_match("books.example:8765", "*.example")
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         normalize_allowed_host("*.example.com")
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         normalize_allowed_host("http://books.example")
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         normalize_allowed_host("127.00.0.1")
 
 
@@ -108,7 +108,7 @@ def test_tailscale_hosts_are_ordinary_non_loopback_hosts(env, monkeypatch):
     client = _client()
     for host in (CGNAT_HOST, MAGICDNS_HOST):
         assert client.get("/api/session", headers={"Host": host}).status_code == 403
-    monkeypatch.setenv("HPBOOKS_ALLOWED_HOSTS", f"{CGNAT_HOST}, {MAGICDNS_HOST}")
+    monkeypatch.setenv("HPGBOOKS_ALLOWED_HOSTS", f"{CGNAT_HOST}, {MAGICDNS_HOST}")
     client = _client()
     for host in (CGNAT_HOST, MAGICDNS_HOST):
         # allowed, but still behind the passphrase like any other remote host
@@ -116,7 +116,7 @@ def test_tailscale_hosts_are_ordinary_non_loopback_hosts(env, monkeypatch):
 
 
 def test_allowed_host_without_passphrase_is_refused(env, monkeypatch):
-    monkeypatch.setenv("HPBOOKS_ALLOWED_HOSTS", "books.example, 192.0.2.10")
+    monkeypatch.setenv("HPGBOOKS_ALLOWED_HOSTS", "books.example, 192.0.2.10")
     client = _client()
     api = client.get("/api/session", headers={"Host": HOST})
     assert api.status_code == 503
@@ -129,7 +129,7 @@ def test_allowed_host_without_passphrase_is_refused(env, monkeypatch):
 
 
 def test_allow_host_file_is_private_and_unioned_with_env(env, monkeypatch):
-    monkeypatch.setenv("HPBOOKS_ALLOWED_HOSTS", "from-env.example")
+    monkeypatch.setenv("HPGBOOKS_ALLOWED_HOSTS", "from-env.example")
     saved = add_allowed_hosts(["From-Flag.Example", "192.0.2.10:8765"])
     assert saved == ["from-flag.example", "192.0.2.10:8765"]
     path = allowed_hosts_path()
@@ -141,9 +141,9 @@ def test_allow_host_file_is_private_and_unioned_with_env(env, monkeypatch):
     assert "from-flag.example" in allowed
     assert client.get("/api/session", headers={"Host": "from-flag.example:8765"}).status_code == 503
     path.chmod(0o644)
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         read_allowed_hosts()
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         _client()
 
 
@@ -162,12 +162,12 @@ def test_web_flag_persists_hosts_and_binds_loopback(env, monkeypatch):
     assert main(["web", "--allow-host", "localhost", "--port", "8765"]) == 1
 
 
-def test_hpbooks_web_passes_allowed_hosts(env):
+def test_hpgbooks_web_passes_allowed_hosts(env):
     path = allowed_hosts_path()
     path.write_text("# tailnet\nbooks.example\n192.0.2.10:8765\n\n", encoding="utf-8")
     path.chmod(0o600)
     result = subprocess.run(
-        ["bin/hpbooks-web", "print-allow-args"],
+        ["bin/hpgbooks-web", "print-allow-args"],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -183,7 +183,7 @@ def test_hpbooks_web_passes_allowed_hosts(env):
     ]
     path.chmod(0o644)
     loose = subprocess.run(
-        ["bin/hpbooks-web", "print-allow-args"],
+        ["bin/hpgbooks-web", "print-allow-args"],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -195,15 +195,15 @@ def test_hpbooks_web_passes_allowed_hosts(env):
 
 
 def test_passphrase_cli_never_prints_the_secret(env, monkeypatch, capsys):
-    monkeypatch.setenv("HPBOOKS_NEW_PASSPHRASE", "short")
+    monkeypatch.setenv("HPGBOOKS_NEW_PASSPHRASE", "short")
     assert main(["web-passphrase", "set"]) == 1
     assert SECRET not in capsys.readouterr().err
-    monkeypatch.setenv("HPBOOKS_NEW_PASSPHRASE", SECRET)
+    monkeypatch.setenv("HPGBOOKS_NEW_PASSPHRASE", SECRET)
     assert main(["web-passphrase", "set"]) == 0
     printed = capsys.readouterr()
     assert "web passphrase set" in printed.out
     assert SECRET not in printed.out + printed.err
-    assert "HPBOOKS_NEW_PASSPHRASE" not in os.environ
+    assert "HPGBOOKS_NEW_PASSPHRASE" not in os.environ
     assert main(["web-passphrase", "status"]) == 0
     assert capsys.readouterr().out.strip() == "web passphrase: set"
     with connect() as conn:
@@ -224,7 +224,7 @@ def test_passphrase_cli_never_prints_the_secret(env, monkeypatch, capsys):
 
 
 def test_passphrase_prompt_confirms_and_rejects_a_mismatch(env, monkeypatch, capsys):
-    monkeypatch.delenv("HPBOOKS_NEW_PASSPHRASE", raising=False)
+    monkeypatch.delenv("HPGBOOKS_NEW_PASSPHRASE", raising=False)
     answers = iter(["first-passphrase", "second-passphrase-no"])
 
     def fake_getpass(_prompt=""):
@@ -243,7 +243,7 @@ def test_remote_login_gates_api_and_loopback_stays_open(env, caplog):
     caplog.set_level(logging.DEBUG)
     add_allowed_hosts(["books.example", "192.0.2.10:8765"])
     with connect() as conn:
-        from hpbooks.access import store_passphrase
+        from hpgbooks.access import store_passphrase
 
         store_passphrase(conn, SECRET)
     client = _client()
@@ -333,11 +333,11 @@ def test_remote_login_gates_api_and_loopback_stays_open(env, caplog):
 def test_lockout_backs_off_and_a_later_good_passphrase_resets_it(env, monkeypatch):
     add_allowed_hosts(["books.example"])
     with connect() as conn:
-        from hpbooks.access import store_passphrase
+        from hpgbooks.access import store_passphrase
 
         store_passphrase(conn, SECRET)
     clock = {"now": 1_000.0}
-    monkeypatch.setattr("hpbooks.access.time.monotonic", lambda: clock["now"])
+    monkeypatch.setattr("hpgbooks.access.time.monotonic", lambda: clock["now"])
     client = _client()
     token = _token(client, HOST)
     for _ in range(5):
@@ -368,7 +368,7 @@ def test_lockout_backs_off_and_a_later_good_passphrase_resets_it(env, monkeypatc
 def test_session_idle_expiry(env):
     add_allowed_hosts(["books.example"])
     with connect() as conn:
-        from hpbooks.access import store_passphrase
+        from hpgbooks.access import store_passphrase
 
         store_passphrase(conn, SECRET)
     client = _client()

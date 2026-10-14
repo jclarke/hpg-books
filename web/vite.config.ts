@@ -2,8 +2,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// The built app is served by Flask from hpbooks/static/app at /app/.
-// `npm run dev` proxies API calls to a local `bin/hpbooks web` on 8765.
+// The built app is served by Flask from hpgbooks/static/app at /app/.
+// `npm run dev` proxies API calls to a local `bin/hpgbooks web` on 8765.
 const backend = "http://127.0.0.1:8765";
 
 export default defineConfig({

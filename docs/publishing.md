@@ -25,7 +25,7 @@ public:             P1 ─────────── P2       (public/main: 
 
    (`PUBLISH_AUTHOR_NAME` / `PUBLISH_AUTHOR_EMAIL` override these for one run.)
 
-3. Create the three local deny lists. They are gitignored (`config/*.local.*`) and are never published. Put them in `config/` or point `HPBOOKS_PRIVACY_DIR` at another directory:
+3. Create the three local deny lists. They are gitignored (`config/*.local.*`) and are never published. Put them in `config/` or point `HPGBOOKS_PRIVACY_DIR` at another directory:
 
    | File | Content |
    |---|---|

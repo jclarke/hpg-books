@@ -16,7 +16,7 @@
 #   --export-only DIR  export and scan into DIR (must not exist or be empty); no commit
 #
 # The tree is `git archive <ref>`, scanned by scripts/privacy_scan.sh with the local deny
-# lists (${HPBOOKS_PRIVACY_DIR:-config}/privacy-*.local.txt). Any finding, or a missing
+# lists (${HPGBOOKS_PRIVACY_DIR:-config}/privacy-*.local.txt). Any finding, or a missing
 # deny list, aborts. The author and committer are PUBLISH_AUTHOR_NAME / PUBLISH_AUTHOR_EMAIL,
 # else `git config publish.name` / `publish.email`; with neither set the script refuses, so
 # your everyday git identity is never written into the public history.
@@ -78,7 +78,7 @@ echo "publish: scanning $(git rev-parse --short "$COMMIT") ..." >&2
 allow="$TREE_DIR/scripts/privacy_allowlist.txt"
 [[ -f "$allow" ]] || allow=/dev/null
 set +e
-HPBOOKS_PRIVACY_DIR="${HPBOOKS_PRIVACY_DIR:-$ROOT/config}" HPBOOKS_PRIVACY_ALLOWLIST="$allow" \
+HPGBOOKS_PRIVACY_DIR="${HPGBOOKS_PRIVACY_DIR:-${HPBOOKS_PRIVACY_DIR:-$ROOT/config}}" HPGBOOKS_PRIVACY_ALLOWLIST="$allow" \
   "$ROOT/scripts/privacy_scan.sh" "$TREE_DIR"
 scan=$?
 set -e

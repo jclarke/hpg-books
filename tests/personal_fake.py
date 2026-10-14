@@ -5,7 +5,7 @@ merchant names or obvious placeholders, and amounts come from a fixed formula
 or a seeded RNG, so two runs produce the same files.
 
     from personal_fake import write_inbox
-    write_inbox(Path("/tmp/personal_dev/inbox"))       # files for `hpbooks import`
+    write_inbox(Path("/tmp/personal_dev/inbox"))       # files for `hpgbooks import`
     accounts_payload()                                  # finance_list_accounts result
 """
 
@@ -195,6 +195,6 @@ def write_inbox(root: Path, day: str = "2026-09-30") -> Path:
     for acct in ACCOUNTS:
         payload = _tool_result(by_account.get(acct["id"], []), acct["id"] in LIABILITIES, acct["id"])
         (folder / f"{acct['mask']}_1.json").write_text(json.dumps(payload), encoding="utf-8")
-    # Outside the day folder so `hpbooks import <day>` does not read it as transactions.
+    # Outside the day folder so `hpgbooks import <day>` does not read it as transactions.
     (root / f"finance_list_accounts_{day}.json").write_text(accounts_payload(), encoding="utf-8")
     return root / day

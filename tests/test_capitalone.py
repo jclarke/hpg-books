@@ -7,7 +7,7 @@ import re
 from datetime import date
 from pathlib import Path
 
-from hpbooks.capitalone import (
+from hpgbooks.capitalone import (
     descriptions_match,
     import_capitalone_csv,
     parse_statement_text,
@@ -16,10 +16,10 @@ from hpbooks.capitalone import (
 )
 import pytest
 
-from hpbooks.cli import main
-from hpbooks.db import connect, init_db
+from hpgbooks.cli import main
+from hpgbooks.db import connect, init_db
 from fake_accounts import SAMPLE_CARD
-from hpbooks.seed_rules import rule_specs
+from hpgbooks.seed_rules import rule_specs
 
 KEY = "ab" * 32
 

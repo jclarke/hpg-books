@@ -29,8 +29,9 @@ def _lists(tmp_path: Path) -> Path:
 
 def _scan(tree: Path, priv: Path | None, *extra: str) -> subprocess.CompletedProcess:
     env = dict(os.environ)
+    env.pop("HPGBOOKS_PRIVACY_DIR", None)
     env.pop("HPBOOKS_PRIVACY_DIR", None)
-    env["HPBOOKS_PRIVACY_DIR"] = str(priv) if priv else str(tree / "no-lists-here")
+    env["HPGBOOKS_PRIVACY_DIR"] = str(priv) if priv else str(tree / "no-lists-here")
     return subprocess.run(["bash", str(SCRIPT), *extra, str(tree)], capture_output=True, text=True, env=env, timeout=300)
 
 
@@ -126,7 +127,7 @@ def test_allowlist_suppresses_documented_false_positive(tmp_path, monkeypatch):
     assert _scan(tree, priv).returncode == 1  # "quokka" is on the fake deny list
     allow = tmp_path / "allow.txt"
     allow.write_text("# a public store name in a generic rule\nQUOKKA MARKET\n")
-    monkeypatch.setenv("HPBOOKS_PRIVACY_ALLOWLIST", str(allow))
+    monkeypatch.setenv("HPGBOOKS_PRIVACY_ALLOWLIST", str(allow))
     proc = _scan(tree, priv)
     assert proc.returncode == 0, proc.stdout + proc.stderr
 

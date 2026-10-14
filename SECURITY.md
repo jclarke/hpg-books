@@ -1,6 +1,6 @@
 # Security
 
-hpbooks keeps a ledger of real financial data on one machine. The design assumes a single trusted user on that machine and treats everything else (other hosts, browsers on the network, the git remote) as untrusted.
+HPG Books keeps a ledger of real financial data on one machine. The design assumes a single trusted user on that machine and treats everything else (other hosts, browsers on the network, the git remote) as untrusted.
 
 ## Storage
 
@@ -22,8 +22,8 @@ hpbooks keeps a ledger of real financial data on one machine. The design assumes
 
 `tailscale serve` can forward a port on your tailnet to `127.0.0.1:8765`. Requests then arrive from loopback with your MagicDNS name or tailnet IP as `Host`. Those hosts must be allowlisted, and every allowlisted host must sign in with a passphrase.
 
-- **Allowlist.** Extra hosts come from `bin/hpbooks web --allow-host HOST` (repeatable; saved to `allowed-hosts` next to the database, mode `600`), from that file directly (one host per line, `#` comments), and from `HPBOOKS_ALLOWED_HOSTS` (this process only). A file with a looser mode is refused. `bin/hpbooks-web start` passes the saved hosts through on every start. An entry without a port matches any port; with a port, only that port.
-- **Passphrase.** `bin/hpbooks web-passphrase set` stores a salted scrypt hash (`n = 2^14`, `r = 8`, `p = 1`, 16-byte salt) in the encrypted database. Minimum 12 characters. The passphrase and hash are never logged or audited. Verification always runs scrypt and compares in constant time.
+- **Allowlist.** Extra hosts come from `bin/hpgbooks web --allow-host HOST` (repeatable; saved to `allowed-hosts` next to the database, mode `600`), from that file directly (one host per line, `#` comments), and from `HPGBOOKS_ALLOWED_HOSTS` (this process only). A file with a looser mode is refused. `bin/hpgbooks-web start` passes the saved hosts through on every start. An entry without a port matches any port; with a port, only that port.
+- **Passphrase.** `bin/hpgbooks web-passphrase set` stores a salted scrypt hash (`n = 2^14`, `r = 8`, `p = 1`, 16-byte salt) in the encrypted database. Minimum 12 characters. The passphrase and hash are never logged or audited. Verification always runs scrypt and compares in constant time.
 - With no passphrase stored, allowlisted hosts get `503 Sign-in is not configured` everywhere; the books stay closed. With one stored, only the sign-in shell and static files load before sign-in; `/api/*` and `/export/*` answer `401`.
 - After 5 failed attempts the server waits 1 second, then 2, 4, and so on up to an hour (`429` with `Retry-After`). The counter is global because the proxy makes every client look like loopback; `X-Forwarded-For` is not trusted.
 - Sessions expire after 12 idle hours. Sign-in replaces the session id and CSRF token. The cookie has no `Domain`, so each allowlisted host name signs in separately. `Secure` is off because the local proxy hop is plain HTTP; Tailscale (WireGuard) encrypts the path from the browser to the machine.
@@ -43,7 +43,7 @@ Every edit from the web UI or an editing CLI command writes an `audit_log` row w
 ## Optional integrations
 
 - **WHMCS** (off by default): read-only MySQL user with column-level grants, reached over SSH tunnels the sync opens and closes; the password is a mode-600 file next to the database. Customer names and emails stay in the encrypted database and appear only on signed-in customer pages. See [docs/whmcs.md](docs/whmcs.md).
-- **Aggregator data** arrives as files an agent saves in `sync/inbox/` (gitignored). hpbooks makes no network calls for ledger data.
+- **Aggregator data** arrives as files an agent saves in `sync/inbox/` (gitignored). HPG Books makes no network calls for ledger data.
 - **Personal mode** shares the same database, key, and web protections. Business and personal queries are separated by account scope with bound parameters, and a test walks every GET route in both modes to check that nothing crosses over. Only the last 4 digits of account numbers are stored.
 
 ## Tests

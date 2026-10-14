@@ -7,15 +7,15 @@ from datetime import date
 
 import pytest
 
-import hpbooks.db as hpdb
-from hpbooks.db import HpbooksError, _apply_migrations, connect
+import hpgbooks.db as hpdb
+from hpgbooks.db import HpgbooksError, _apply_migrations, connect
 from fake_accounts import BANK
-from hpbooks.personal import actions
-from hpbooks.personal import analytics as pa
-from hpbooks.personal import recurring as rec
-from hpbooks.personal.classify import load_personal, needs_review, reclassify_personal
-from hpbooks.personal.merchants import merchant_key
-from hpbooks.personal.seed import seed_personal
+from hpgbooks.personal import actions
+from hpgbooks.personal import analytics as pa
+from hpgbooks.personal import recurring as rec
+from hpgbooks.personal.classify import load_personal, needs_review, reclassify_personal
+from hpgbooks.personal.merchants import merchant_key
+from hpgbooks.personal.seed import seed_personal
 from personal_helpers import add_account, add_txn, anchor, business_class, cat_id, classify_all, make_db
 
 CHK, SAV, CARD, LOAN, BROKER = "fake-chk", "fake-sav", "fake-card", "fake-loan", "fake-broker"
@@ -82,16 +82,16 @@ def test_starter_rules_and_manual_wins(db):
         assert _row(conn, "t-kroger")["note"] == "lunch"
         audit = conn.execute("SELECT action FROM audit_log WHERE txn_id = 't-kroger'").fetchall()
         assert [row[0] for row in audit] == ["personal_classify"]
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             actions.categorize(conn, "biz:anything", dining, actor="test")
 
 
 def test_business_rows_cannot_be_categorized_from_personal(db):
     with connect() as conn:
         add_txn(conn, "b-1", BANK, "2026-09-01", -1000, "BUSINESS THING")
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             actions.categorize(conn, "b-1", cat_id(conn, "Food", "Groceries"), actor="test")
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             actions.set_note(conn, "b-1", "x", actor="test")
 
 
@@ -108,9 +108,9 @@ def test_splits_must_sum_to_the_amount(db):
         add_txn(conn, "t-costco", CARD, "2026-09-03", -15000, "COSTCO WHSE #0123")
         classify_all(conn)
         groceries, home = cat_id(conn, "Food", "Groceries"), cat_id(conn, "Shopping", "Home goods")
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             actions.set_splits(conn, "t-costco", [{"category_id": groceries, "amount_cents": -10000}, {"category_id": home, "amount_cents": -4000}], actor="test")
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             actions.set_splits(conn, "t-costco", [{"category_id": groceries, "amount_cents": -15000}], actor="test")
         actions.set_splits(conn, "t-costco", [{"category_id": groceries, "amount_cents": -10000}, {"category_id": home, "amount_cents": -5000}], actor="test")
         t = pa.totals([_row(conn, "t-costco")], pa.categories(conn))
@@ -121,7 +121,7 @@ def test_splits_must_sum_to_the_amount(db):
 
 
 def test_tags_and_notes_are_searchable(db):
-    from hpbooks.personal.queries import personal_search, query
+    from hpgbooks.personal.queries import personal_search, query
 
     with connect() as conn:
         add_txn(conn, "t-gift", CARD, "2026-09-03", -4500, "TARGET 00012345")
@@ -132,7 +132,7 @@ def test_tags_and_notes_are_searchable(db):
         assert query(conn, search="present for")["total"] == 1
         assert query(conn, search="45.00")["total"] == 1
         assert personal_search(conn, "birthday")["transactions"][0]["id"] == "t-gift"
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             actions.set_tags(conn, "t-gift", ["<script>"], actor="test")
 
 
@@ -155,7 +155,7 @@ def test_card_payment_is_a_transfer_not_spending(db):
 
 
 def test_ambiguous_pairs_wait_for_confirmation(db):
-    from hpbooks.personal.classify import detect_transfers, set_transfer_decision
+    from hpgbooks.personal.classify import detect_transfers, set_transfer_decision
 
     with connect() as conn:
         add_txn(conn, "a-out", CHK, "2026-09-10", -20000, "ONLINE TRANSFER")
@@ -172,7 +172,7 @@ def test_ambiguous_pairs_wait_for_confirmation(db):
 
 
 def test_coincidental_equal_amounts_do_not_pair(db):
-    from hpbooks.personal.classify import detect_transfers
+    from hpgbooks.personal.classify import detect_transfers
 
     with connect() as conn:
         add_txn(conn, "x-out", CARD, "2026-09-10", -1799, "NETFLIX.COM")
@@ -221,7 +221,7 @@ def test_mortgage_paid_directly_from_business(db):
         assert kinds == {("funding", "Owner draws", 210000), ("expense", "Mortgage", -210000)}
         t = pa.totals(rows, pa.categories(conn))
         assert t["owner_draws_cents"] == 210000 and t["spending_cents"] == 210000 and t["net_cents"] == 0
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             actions.categorize(conn, "biz:m-biz", cat_id(conn, "Food", "Groceries"), actor="test")
 
 
@@ -243,7 +243,7 @@ def test_mortgage_from_personal_after_draw(db):
 
 
 def test_business_pnl_identical_with_and_without_personal(db):
-    from hpbooks.reports import build_pnl, render_pnl
+    from hpgbooks.reports import build_pnl, render_pnl
 
     with connect() as conn:
         _business_draw(conn, "d-biz", "2026-09-10", -250000, "Online Banking transfer to CHK 1001")
@@ -337,7 +337,7 @@ def test_recurring_status_and_cadence_overrides(db):
         actions.update_recurring(conn, item["series_key"], {"status": "confirmed", "cadence": "quarterly"}, actor="test")
         [item] = [item for item in pa.recurring(conn)["items"] if item["merchant_key"] == "SPOTIFY"]
         assert item["cadence"] == "quarterly" and item["user_confirmed"] and item["next_expected"] == "2026-12-14"
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             actions.update_recurring(conn, item["series_key"], {"status": "gone"}, actor="test")
         assert conn.execute("SELECT COUNT(*) FROM audit_log WHERE action = 'personal_recurring'").fetchone()[0] == 2
 
@@ -377,7 +377,7 @@ def test_budget_math_alerts_rollover_copy_and_average(db):
         assert actions.copy_budgets(conn, "2026-10", actor="test") == 0
         suggestions = {item["category"]: item["average_cents"] for item in pa.average_suggestions(conn, "2026-09")}
         assert suggestions["Groceries"] == 33000
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             actions.set_budget(conn, {"category_id": cat_id(conn, "Income", "Paycheck"), "amount_cents": 1}, actor="test")
         assert conn.execute("SELECT COUNT(*) FROM audit_log WHERE action = 'personal_budget'").fetchone()[0] >= 4
 
@@ -416,11 +416,11 @@ def test_net_worth_from_anchors_and_history(db):
         history = {point["date"]: point["net_cents"] for point in worth["points"]}
         assert history["2026-09-30"] == worth["net_cents"]
         # Before the checking anchor: walk back the posted payroll-free activity (the -100 on 9/10).
-        from hpbooks.personal.balances import load_series
+        from hpgbooks.personal.balances import load_series
 
         series = load_series(conn, {CHK: {"type": "cash"}})[CHK]
         assert series.balance_at("2026-09-05") == 110000
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             pa.net_worth(conn, "5Y")
         overview = pa.accounts_overview(conn)
         assert [group["label"] for group in overview["groups"]] == ["Cash", "Credit cards", "Investments", "Loans & mortgages"]
@@ -479,7 +479,7 @@ def test_goals_progress(db):
         assert goals["Done"]["status"] == "done"
         actions.save_goal(conn, {"archived": True}, g2["id"], actor="test")
         assert "Trip" not in {goal["name"] for goal in pa.goals(conn)}
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             actions.save_goal(conn, {"name": "x", "target_cents": 0}, actor="test")
         assert g1["id"]
 

@@ -1,12 +1,24 @@
-# hpbooks
+# HPG Books
 
 A local, encrypted bookkeeping app for a small business and a household. It imports bank and card transactions, classifies them with rules you control, and produces a profit-and-loss statement, cash flow, vendor and tax-prep reports, from the command line or a web UI on your own machine. A separate **Personal** mode in the same database covers personal accounts: net worth, spending, budgets, recurring charges, bills, and goals.
 
 Nothing leaves the machine. The database is SQLCipher-encrypted, the web server listens on `127.0.0.1` only, and the app makes no third-party requests. The product name shown in the UI comes from your config (default "Books").
 
+## Grok Bot template
+
+**[Get the Grok Bot template](https://x.ai/bot/gHLmbUpkuYNbv0F-J2JwC)**: the fastest way to start. It sets up a Grok Bot with this app, the skills below, and the [routines that keep it updated](#grok-bot-routines-to-keep-it-updated). Grok Bot installs everything on its own cloud computer, not your laptop, and asks you a few questions along the way.
+
+Skills shipped with the template:
+
+- **books-getting-started**: the first install and setup, including the questions in step 2 below.
+- **daily-books-sync**: the daily business books sync.
+- **daily-personal-books-sync**: the daily personal books sync.
+
 ## Use it with Grok Bot
 
-hpbooks is a private bookkeeping app that runs on your own computer: business books, personal finances, or both, in one encrypted database.
+Open source · runs on your own Grok Bot cloud computer. HPG Books is a private bookkeeping app: business books, personal finances, or both, in one encrypted database.
+
+Starting from the [Grok Bot template](https://x.ai/bot/gHLmbUpkuYNbv0F-J2JwC) handles step 1 and asks the step 2 questions for you. Without it, from a plain chat:
 
 **1. Ask Grok Bot to install it.** Paste this into a chat:
 
@@ -34,13 +46,26 @@ Grok Bot clones the repository, creates the database key (it never shows the key
 | "When are my cards due?" | Minimum payments, due dates, and APRs for every card and loan, soonest first. See [docs/payment-tracking.md](docs/payment-tracking.md). |
 | "How's my spending this month?" | Personal spending by category, budgets, and recurring charges. See [docs/personal-mode.md](docs/personal-mode.md). |
 | "Export a PDF report" | The P&L as a PDF; CSV and XLSX work too. |
-| "Check for updates" | Runs `bin/hpbooks update check` and tells you what is new. It updates only when you say so. See [Updates](#updates). |
+| "Check for updates" | Runs `bin/hpgbooks update check` and tells you what is new. It updates only when you say so. See [Updates](#updates). |
 
-Grok Bot can also run the sync and the update check every day on a schedule; the update check stays quiet unless there is a new version ([docs/update-routine.md](docs/update-routine.md)).
+Grok Bot can also run the syncs, a health check, and the update check on a schedule; see [Grok Bot routines to keep it updated](#grok-bot-routines-to-keep-it-updated).
 
 **4. Open the web app.** On the computer where the books run, go to <http://127.0.0.1:8765>. The **Business | Personal** toggle in the header switches modes. To open it from your laptop or phone, ask Grok Bot to "set up Tailscale for my books": the app stays on `127.0.0.1`, Tailscale forwards a private tailnet port to it, and a passphrase is required. See [Remote access with Tailscale](#remote-access-with-tailscale-optional).
 
-The app itself makes no network calls for ledger data: Grok Bot saves what the Finance connector returns as files on that computer, and hpbooks imports those files into the encrypted database.
+The app itself makes no network calls for ledger data: Grok Bot saves what the Finance connector returns as files on that computer, and HPG Books imports those files into the encrypted database.
+
+## Grok Bot routines to keep it updated
+
+The [Grok Bot template](https://x.ai/bot/gHLmbUpkuYNbv0F-J2JwC) schedules these for you. Without it, ask Grok Bot to set each one up as a routine. Times are suggestions in your own timezone, spread out so the jobs don't overlap.
+
+| Routine | Suggested schedule | What it does |
+|---|---|---|
+| Daily business books sync | Weekdays, about 7:20am | Pulls recent transactions for the business accounts through the Finance connector, imports them (re-imports never duplicate), refreshes balances, applies your rules, and reports what still needs a decision. Uses the **daily-books-sync** skill; see [sync/README.md](sync/README.md). |
+| Daily personal books sync | Every day, about 7:43am | The same for the personal accounts: new transactions, balances, net worth, and anything new in the review queue. Uses the **daily-personal-books-sync** skill. |
+| Daily payment due dates update | Every day, about 8:12am | Refreshes minimum payments, due dates, and APRs for cards and loans so the Bills page stays current. See [docs/payment-tracking.md](docs/payment-tracking.md). |
+| Weekly Monarch pull | Sundays | For accounts the Finance connector doesn't cover: pulls a Monarch export, imports only the rows the ledger is missing, and updates those accounts' balances. See [docs/importers.md](docs/importers.md#monarch-export-scriptsimport_monarchpy) and [docs/manual-balances.md](docs/manual-balances.md). |
+| Books app health check | Every 30 minutes | Checks that the web server answers on `127.0.0.1:8765`. If it is down, restarts it with `bin/hpgbooks-web start`, and restarts Tailscale when remote access is set up. Quiet when everything is fine. |
+| Update checker | Every day | Runs `bin/hpgbooks update check` and messages you only when there is a new version. It never applies an update itself. See [docs/update-routine.md](docs/update-routine.md). |
 
 ## Screenshots
 
@@ -93,7 +118,7 @@ git clone <this repository> books && cd books
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 
-# Web UI (optional: hpbooks/static/app is already built)
+# Web UI (optional: hpgbooks/static/app is already built)
 (cd web && npm ci)
 bin/build-ui --no-install
 
@@ -108,24 +133,24 @@ chmod 600 config/local.toml
 $EDITOR config/local.toml      # product and company name, businesses, categories (decide before init)
 
 # Create the database and start the web UI
-bin/hpbooks init
-bin/hpbooks-web start          # http://127.0.0.1:8765
+bin/hpgbooks init
+bin/hpgbooks-web start          # http://127.0.0.1:8765
 ```
 
 **Back up the key.** Without it the database cannot be opened. Keep a copy somewhere safe and separate from database backups.
 
-`bin/hpbooks` runs `.venv/bin/python -m hpbooks`; `bin/hpbooks --help` lists every command. `bin/hpbooks-web start|stop|status` runs the server in the background (log and pid in `data/`); `bin/hpbooks web` runs it in the foreground. The database is `data/hpbooks.db` unless `HPBOOKS_DB` or `[paths] db` says otherwise. Business tags and categories become database constraints at `init`, so set them in the config first. See [docs/configuration.md](docs/configuration.md).
+`bin/hpgbooks` runs `.venv/bin/python -m hpgbooks`; `bin/hpgbooks --help` lists every command. `bin/hpgbooks-web start|stop|status` runs the server in the background (log and pid in `data/`); `bin/hpgbooks web` runs it in the foreground. The database is `data/hpbooks.db` unless `HPBOOKS_DB` or `[paths] db` says otherwise. Business tags and categories become database constraints at `init`, so set them in the config first. See [docs/configuration.md](docs/configuration.md).
 
 ## First steps
 
 ```bash
-bin/hpbooks accounts discover finance_list_accounts.json --dry-run   # register accounts from a saved account list
-bin/hpbooks accounts set-scope <id|last4|name> business               # new accounts start as personal
-bin/hpbooks import sync/inbox/2026-10-01/                             # load transactions
-bin/hpbooks review --year 2026                                        # what still needs a decision
-bin/hpbooks classify <txn-id-prefix> --tag general --category "Software & Licenses" --rule
-bin/hpbooks pnl --year 2026 --by month
-bin/hpbooks reconcile --year 2026
+bin/hpgbooks accounts discover finance_list_accounts.json --dry-run   # register accounts from a saved account list
+bin/hpgbooks accounts set-scope <id|last4|name> business               # new accounts start as personal
+bin/hpgbooks import sync/inbox/2026-10-01/                             # load transactions
+bin/hpgbooks review --year 2026                                        # what still needs a decision
+bin/hpgbooks classify <txn-id-prefix> --tag general --category "Software & Licenses" --rule
+bin/hpgbooks pnl --year 2026 --by month
+bin/hpgbooks reconcile --year 2026
 ```
 
 Most of this is easier in the web UI: the Review page, inline classification on Transactions, and "Create rule from this". The daily pull routine for an agent is in [sync/README.md](sync/README.md).
@@ -136,17 +161,17 @@ The server always binds to loopback. To reach it from your other devices, let Ta
 
 ```bash
 tailscale serve --bg --tcp 8765 tcp://127.0.0.1:8765     # check `tailscale serve --help` for your version
-bin/hpbooks web-passphrase set                           # at least 12 characters; stored as a scrypt hash
-bin/hpbooks-web stop
-bin/hpbooks web --allow-host <machine>.<tailnet-domain> --allow-host <tailnet-ip>   # saves data/allowed-hosts (mode 600); Ctrl-C
-bin/hpbooks-web start                                    # passes the saved hosts on every start
+bin/hpgbooks web-passphrase set                           # at least 12 characters; stored as a scrypt hash
+bin/hpgbooks-web stop
+bin/hpgbooks web --allow-host <machine>.<tailnet-domain> --allow-host <tailnet-ip>   # saves data/allowed-hosts (mode 600); Ctrl-C
+bin/hpgbooks-web start                                    # passes the saved hosts on every start
 ```
 
 You can also edit `data/allowed-hosts` directly (one host per line, mode 600). Each host name signs in separately. With no passphrase set, allowlisted hosts get `503` and the books stay closed. Details: [SECURITY.md](SECURITY.md).
 
 ## WHMCS (optional)
 
-Set `whmcs = true` under `[features]` and fill in `[whmcs]` and one `[[whmcs.brands]]` per install in `config/local.toml`, put the read-only MySQL password in `data/whmcs.secret` (mode 600), then `bin/hpbooks whmcs sync`. Setup, grants, and report definitions: [docs/whmcs.md](docs/whmcs.md).
+Set `whmcs = true` under `[features]` and fill in `[whmcs]` and one `[[whmcs.brands]]` per install in `config/local.toml`, put the read-only MySQL password in `data/whmcs.secret` (mode 600), then `bin/hpgbooks whmcs sync`. Setup, grants, and report definitions: [docs/whmcs.md](docs/whmcs.md).
 
 ## Updates
 
@@ -154,15 +179,15 @@ Installs follow the public snapshot repository (`[update]` in the config: `repo`
 
 ```bash
 git remote add public https://github.com/jclarke/hpg-books.git   # once, if the clone lacks it
-bin/hpbooks update check          # exit 0 up to date, 1 update available, 2 error
-bin/hpbooks update apply          # dry run: lists the new commits, changes nothing
-bin/hpbooks update apply --yes    # git fetch + git merge --ff-only
-bin/hpbooks-web stop && bin/hpbooks-web start   # load the new code
+bin/hpgbooks update check          # exit 0 up to date, 1 update available, 2 error
+bin/hpgbooks update apply          # dry run: lists the new commits, changes nothing
+bin/hpgbooks update apply --yes    # git fetch + git merge --ff-only
+bin/hpgbooks-web stop && bin/hpgbooks-web start   # load the new code
 ```
 
-What is preserved: everything git ignores, which an update never writes: `config/local.toml`, `config/*.local.*`, `data/` (the database, key, logs, allowlist), keys and secrets, `.venv`, `sync/inbox/`, and exports. `apply` refuses when tracked files have uncommitted changes, when your clone has commits of its own (it only fast-forwards), or when upstream would change a protected path. The built UI in `hpbooks/static/app` arrives with the update; `--build-ui` also runs `bin/build-ui --no-install` when `web/` changed. If `requirements.txt` changed, run `.venv/bin/pip install -r requirements.txt`.
+What is preserved: everything git ignores, which an update never writes: `config/local.toml`, `config/*.local.*`, `data/` (the database, key, logs, allowlist), keys and secrets, `.venv`, `sync/inbox/`, and exports. `apply` refuses when tracked files have uncommitted changes, when your clone has commits of its own (it only fast-forwards), or when upstream would change a protected path. The built UI in `hpgbooks/static/app` arrives with the update; `--build-ui` also runs `bin/build-ui --no-install` when `web/` changed. If `requirements.txt` changed, run `.venv/bin/pip install -r requirements.txt`.
 
-An install unpacked from a zip (no `.git`) is checked through the GitHub API (`gh` when installed, else `GITHUB_TOKEN` if set) against the revision in `.hpbooks-revision`; `apply --yes` downloads the branch and overlays it, skipping the same protected paths. Files deleted upstream are not removed from a zip install.
+An install unpacked from a zip (no `.git`) is checked through the GitHub API (`gh` when installed, else `GITHUB_TOKEN` if set) against the revision in `.hpgbooks-revision`; `apply --yes` downloads the branch and overlays it, skipping the same protected paths. Files deleted upstream are not removed from a zip install.
 
 To be told about updates, see [docs/update-routine.md](docs/update-routine.md).
 
@@ -170,7 +195,7 @@ To be told about updates, see [docs/update-routine.md](docs/update-routine.md).
 
 ```bash
 .venv/bin/pytest                                 # Python; temporary database and key per test
-HPBOOKS_TEST_WHMCS=off .venv/bin/pytest          # same, with the WHMCS feature off
+HPGBOOKS_TEST_WHMCS=off .venv/bin/pytest          # same, with the WHMCS feature off
 (cd web && npm test && npm run typecheck)        # Vitest + tsc
 ```
 
@@ -182,8 +207,8 @@ If an assistant (Claude Code or similar) sets this up for you, give it this chec
 
 1. Clone, create `.venv`, `pip install -r requirements.txt`. Do not run `npm` unless the UI must be rebuilt.
 2. Create the key file exactly as above. Never print, log, or commit the key; never paste it into chat.
-3. Copy `config/config.example.toml` to `config/local.toml` and ask the user for the company name, businesses, and categories **before** `bin/hpbooks init`.
-4. Run `bin/hpbooks init`, `bin/hpbooks-web start`, and check `curl -s http://127.0.0.1:8765/api/session`.
+3. Copy `config/config.example.toml` to `config/local.toml` and ask the user for the company name, businesses, and categories **before** `bin/hpgbooks init`.
+4. Run `bin/hpgbooks init`, `bin/hpgbooks-web start`, and check `curl -s http://127.0.0.1:8765/api/session`.
 5. Run `.venv/bin/pytest -q` to confirm the install.
 6. Never commit `data/`, `config/local.toml`, `config/*.local.*`, `sync/inbox/`, or exports, and never bind the server to anything but `127.0.0.1`.
 7. For remote access, follow the Tailscale section and set a passphrase before allowlisting a host.
@@ -201,7 +226,7 @@ If an assistant (Claude Code or similar) sets this up for you, give it this chec
 
 ## Maintainers: publishing
 
-This repository is published from a private working copy as scanned snapshots, so the public history never contains private commits. One-time: `git remote add public <url>`, `git config publish.name` / `publish.email`, and three local deny lists in `config/` (or `HPBOOKS_PRIVACY_DIR`). Then:
+This repository is published from a private working copy as scanned snapshots, so the public history never contains private commits. One-time: `git remote add public <url>`, `git config publish.name` / `publish.email`, and three local deny lists in `config/` (or `HPGBOOKS_PRIVACY_DIR`). Then:
 
 ```bash
 scripts/publish.sh            # dry run: export, privacy scan, show what would be published

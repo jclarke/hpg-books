@@ -8,7 +8,7 @@
 #   DIR           scan DIR as it is
 #
 # Checks (each finding prints as `file:line: [check] snippet`):
-#   terms / ids / last4   local deny lists, read from ${HPBOOKS_PRIVACY_DIR:-<repo>/config}:
+#   terms / ids / last4   local deny lists, read from ${HPGBOOKS_PRIVACY_DIR:-<repo>/config}:
 #                           privacy-terms.local.txt  case-insensitive ripgrep regexes, # comments
 #                           privacy-ids.local.txt    fixed strings (account / transaction ids)
 #                           privacy-last4.local.txt  4-digit numbers, flagged next to account
@@ -19,7 +19,7 @@
 #   file                  files that must never be published (databases, keys, local config, ...)
 #   gitleaks / trufflehog run when installed (trufflehog without live verification)
 #
-# scripts/privacy_allowlist.txt (or $HPBOOKS_PRIVACY_ALLOWLIST) suppresses intentional false
+# scripts/privacy_allowlist.txt (or $HPGBOOKS_PRIVACY_ALLOWLIST) suppresses intentional false
 # positives: `regex` lines matched against the text around a finding, and `file:<glob>` lines
 # that allow an image or PDF.
 #
@@ -44,7 +44,7 @@ done
 command -v rg >/dev/null || { echo "privacy_scan: ripgrep (rg) is required" >&2; exit 2; }
 command -v python3 >/dev/null || { echo "privacy_scan: python3 is required" >&2; exit 2; }
 
-PRIV="${HPBOOKS_PRIVACY_DIR:-$ROOT/config}"
+PRIV="${HPGBOOKS_PRIVACY_DIR:-${HPBOOKS_PRIVACY_DIR:-$ROOT/config}}"
 TERMS="$PRIV/privacy-terms.local.txt"
 IDS="$PRIV/privacy-ids.local.txt"
 LAST4="$PRIV/privacy-last4.local.txt"
@@ -56,7 +56,7 @@ if ((${#missing[@]})); then
     echo "privacy_scan: WARNING: local deny lists missing:"
     printf '    %s\n' "${missing[@]}"
     echo "Personal names, ids, and account numbers will NOT be checked."
-    echo "Set HPBOOKS_PRIVACY_DIR or create the files (see scripts/privacy_scan.sh)."
+    echo "Set HPGBOOKS_PRIVACY_DIR or create the files (see scripts/privacy_scan.sh)."
     echo "################################################################"
   } >&2
   ((ALLOW_MISSING)) || exit 3
@@ -99,7 +99,7 @@ else
   echo "privacy_scan: warning: trufflehog not installed, skipping" >&2
 fi
 
-python3 - "$TREE" "$TERMS" "$IDS" "$LAST4" "${HPBOOKS_PRIVACY_ALLOWLIST:-$ROOT/scripts/privacy_allowlist.txt}" "$EXTERNAL" <<'PY'
+python3 - "$TREE" "$TERMS" "$IDS" "$LAST4" "${HPGBOOKS_PRIVACY_ALLOWLIST:-${HPBOOKS_PRIVACY_ALLOWLIST:-$ROOT/scripts/privacy_allowlist.txt}}" "$EXTERNAL" <<'PY'
 import fnmatch
 import json
 import os

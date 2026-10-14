@@ -2,14 +2,14 @@
 
 ## Statement balances
 
-`hpbooks accounts` sums imported activity. That figure is not the bank or card balance, because the ledger has no opening balance before the books open (2026-01-01, fixed in `hpbooks/balances.py`).
+`hpgbooks accounts` sums imported activity. That figure is not the bank or card balance, because the ledger has no opening balance before the books open (2026-01-01, fixed in `hpgbooks/balances.py`).
 
 An anchor is a posted balance on a date. Cash is money in the account. A credit card or other liability is the amount owed (a credit balance is negative). The amount on the command line is dollars.
 
 ```bash
-bin/hpbooks balances set 0001 --balance 1234.56 --as-of 2026-10-01 --source statement --note "September statement"
-bin/hpbooks balances list
-bin/hpbooks balances history 0001
+bin/hpgbooks balances set 0001 --balance 1234.56 --as-of 2026-10-01 --source statement --note "September statement"
+bin/hpgbooks balances list
+bin/hpgbooks balances history 0001
 ```
 
 `--source` is `statement` (the default, including the Update balance form) or `finance` (the daily sync). The account can be an id, a last4, or a unique part of the name (`paypal`, `0001`, `checking`).
@@ -34,10 +34,10 @@ The Accounts page, each register, and the dashboard cash card use this balance. 
 One vendor often arrives under several spellings. A merge points those spellings at one display name. The ledger text is not rewritten. The vendors page, the expenses-by-vendor report (CSV, XLSX, and PDF), dashboard top vendors, global search, and the transactions vendor filter all apply the map when they run. Filtering by the canonical name, or by any spelling in the group, returns every merged row.
 
 ```bash
-bin/hpbooks vendors merge "ACME SOFTWARE INC" "ACME SOFTWARE LONG DESCRIPTOR" --into "Acme Software"
-bin/hpbooks vendors unmerge "ACME SOFTWARE INC"
-bin/hpbooks vendors rename "Acme Software" "Acme"
-bin/hpbooks vendors aliases
+bin/hpgbooks vendors merge "ACME SOFTWARE INC" "ACME SOFTWARE LONG DESCRIPTOR" --into "Acme Software"
+bin/hpgbooks vendors unmerge "ACME SOFTWARE INC"
+bin/hpgbooks vendors rename "Acme Software" "Acme"
+bin/hpgbooks vendors aliases
 ```
 
 On the Vendors page, select two or more rows and choose Merge. The dialog shows the combined spend and the name that will be displayed. A merged vendor shows how many spellings it contains; expand it to unmerge one spelling. Rename changes the canonical name, and the spellings follow it. Possible duplicates are pairs that share a long token or a normalized prefix and are not already one vendor. Merging the same group into the same name again does not add another audit row.

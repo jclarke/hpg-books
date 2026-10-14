@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Build the React app in web/ and copy it to hpbooks/static/app, which Flask serves.
-# Needs Node 20+ and npm. The built files are committed so `bin/hpbooks web` runs without Node.
+# Build the React app in web/ and copy it to hpgbooks/static/app, which Flask serves.
+# Needs Node 20+ and npm. The built files are committed so `bin/hpgbooks web` runs without Node.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/web"
@@ -8,8 +8,8 @@ if [[ "${1:-}" != "--no-install" ]]; then
   npm ci --no-audit --no-fund
 fi
 npm run build
-DEST="$ROOT/hpbooks/static/app"
+DEST="$ROOT/hpgbooks/static/app"
 rm -rf "$DEST"
 mkdir -p "$DEST"
 cp -R "$ROOT/web/dist/." "$DEST/"
-echo "built web/dist -> hpbooks/static/app ($(find "$DEST" -type f | wc -l) files)"
+echo "built web/dist -> hpgbooks/static/app ($(find "$DEST" -type f | wc -l) files)"

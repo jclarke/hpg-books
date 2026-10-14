@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from hpbooks.access import clear_passphrase_cache, reset_lockout
-from hpbooks.cli import main
-from hpbooks.db import connect, init_db
-from hpbooks.whmcs import sync
+from hpgbooks.access import clear_passphrase_cache, reset_lockout
+from hpgbooks.cli import main
+from hpgbooks.db import connect, init_db
+from hpgbooks.whmcs import sync
 from whmcs_fake import FakeSource, factory_for
 
 KEY = "b2" * 32
@@ -21,8 +21,8 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setenv("HPBOOKS_KEY", KEY)
     monkeypatch.setenv("HPBOOKS_DB", str(tmp_path / "books.db"))
     monkeypatch.delenv("HPBOOKS_KEY_FILE", raising=False)
-    monkeypatch.delenv("HPBOOKS_ALLOWED_HOSTS", raising=False)
-    monkeypatch.delenv("HPBOOKS_NEW_PASSPHRASE", raising=False)
+    monkeypatch.delenv("HPGBOOKS_ALLOWED_HOSTS", raising=False)
+    monkeypatch.delenv("HPGBOOKS_NEW_PASSPHRASE", raising=False)
     init_db()
     reset_lockout()
     clear_passphrase_cache()
@@ -39,7 +39,7 @@ def synced(env):
 
 
 def _client(extra_hosts=None):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     app = create_app()
     if extra_hosts is not None:
@@ -109,7 +109,7 @@ def test_customer_lookup_on_loopback(synced):
 
 
 def test_customer_lookup_needs_sign_in_on_the_tailnet(synced, monkeypatch):
-    monkeypatch.setenv("HPBOOKS_NEW_PASSPHRASE", SECRET)
+    monkeypatch.setenv("HPGBOOKS_NEW_PASSPHRASE", SECRET)
     assert main(["web-passphrase", "set"]) == 0
     clear_passphrase_cache()
     client = _client([HOST])
@@ -134,7 +134,7 @@ def test_customer_lookup_needs_sign_in_on_the_tailnet(synced, monkeypatch):
 
 def test_customer_handler_checks_sign_in_itself(synced, monkeypatch):
     """Even if the app-wide guard were bypassed, the handler refuses an unsigned tailnet request."""
-    import hpbooks.whmcs_api as module
+    import hpgbooks.whmcs_api as module
 
     monkeypatch.setattr(module, "request_requires_login", lambda: True)
     monkeypatch.setattr(module, "session_is_authenticated", lambda: False)

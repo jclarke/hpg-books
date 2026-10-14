@@ -39,11 +39,11 @@ row that is **newer** replaces the old one when the old due date had already pas
 ## Commands
 
 ```
-bin/hpbooks accounts set-payment 1234 --min 85 --due 2026-10-01 --apr 24.99 --source statement
-bin/hpbooks accounts set-payment 5678 --autopay no --notes "pay on the 15th"
-bin/hpbooks accounts set-payment 9012 --paid               # this cycle's payment was made
-bin/hpbooks accounts payments [--mode business] [--json]    # soonest first, with the 30-day summary
-bin/hpbooks accounts infer-payments [--dry-run]             # loans from payment history
+bin/hpgbooks accounts set-payment 1234 --min 85 --due 2026-10-01 --apr 24.99 --source statement
+bin/hpgbooks accounts set-payment 5678 --autopay no --notes "pay on the 15th"
+bin/hpgbooks accounts set-payment 9012 --paid               # this cycle's payment was made
+bin/hpgbooks accounts payments [--mode business] [--json]    # soonest first, with the 30-day summary
+bin/hpgbooks accounts infer-payments [--dry-run]             # loans from payment history
 ```
 
 The statement importers `scripts/import_cfna.py` and `scripts/import_applecard.py` also store the

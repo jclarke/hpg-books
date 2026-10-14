@@ -48,7 +48,7 @@ export default function WhmcsMarginsPage() {
         <NotSynced />
       ) : data && !data.seeded ? (
         <EmptyState icon="server" title="No servers yet">
-          Run <code>bin/hpbooks margins seed</code> on the books machine. It loads servers, cost components, mapping rules, and overhead from the local seed file.
+          Run <code>bin/hpgbooks margins seed</code> on the books machine. It loads servers, cost components, mapping rules, and overhead from the local seed file.
         </EmptyState>
       ) : (
         <>

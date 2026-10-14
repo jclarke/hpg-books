@@ -1,4 +1,4 @@
-"""`hpbooks update check|apply` against local repositories (no network) and a faked GitHub API."""
+"""`hpgbooks update check|apply` against local repositories (no network) and a faked GitHub API."""
 
 from __future__ import annotations
 
@@ -11,9 +11,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from hpbooks import config as hpconfig
-from hpbooks import update
-from hpbooks.config import UpdateConfig
+from hpgbooks import config as hpconfig
+from hpgbooks import update
+from hpgbooks.config import UpdateConfig
 
 GIT_ENV = {
     "GIT_AUTHOR_NAME": "Test",
@@ -104,7 +104,7 @@ def test_check_same_tree_with_unrelated_history_is_up_to_date(repos):
 
 
 def test_apply_needs_yes_and_preserves_local_files(repos, capsys):
-    sha = push_new(repos, {"README.md": "v2\n", "web/src/x.ts": "x\n", "hpbooks/new.py": "\n"})
+    sha = push_new(repos, {"README.md": "v2\n", "web/src/x.ts": "x\n", "hpgbooks/new.py": "\n"})
     head = git(repos.install, "rev-parse", "HEAD")
     assert run(update.cmd_apply, repos.install) == update.AVAILABLE
     assert git(repos.install, "rev-parse", "HEAD") == head
@@ -116,7 +116,7 @@ def test_apply_needs_yes_and_preserves_local_files(repos, capsys):
     assert (repos.install / "config" / "local.toml").read_text() == "# mine\n"
     assert (repos.install / "data" / "hpbooks.db").read_text() == "ledger"
     out = capsys.readouterr().out
-    assert "bin/build-ui --no-install" in out and "bin/hpbooks-web stop" in out
+    assert "bin/build-ui --no-install" in out and "bin/hpgbooks-web stop" in out
     assert run(update.cmd_check, repos.install) == update.UP_TO_DATE
 
 
@@ -132,7 +132,7 @@ def test_is_protected():
     patterns = update.ignore_patterns(hpconfig.REPO_ROOT)
     for path in ("config/local.toml", "config/privacy-terms.local.txt", "data/hpbooks.db", "data/x/y", "a/b.key", ".venv/bin/python", "web/node_modules/x/y.js"):
         assert update.is_protected(path, patterns), path
-    for path in ("config/config.example.toml", "hpbooks/cli.py", "web/src/App.tsx", "README.md", "database.md"):
+    for path in ("config/config.example.toml", "hpgbooks/cli.py", "web/src/App.tsx", "README.md", "database.md"):
         assert not update.is_protected(path, patterns), path
 
 
@@ -153,7 +153,7 @@ def test_zip_install_check_and_apply(tmp_path, monkeypatch, capsys):
     (root / ".gitignore").write_text("config/local.toml\ndata/\n")
     sha = "a" * 40
     monkeypatch.setattr(update, "api_tip", lambda cfg: update.Tip(sha, "2026-10-07", "Publish snapshot"))
-    zipball = _zipball({"README.md": "new\n", "config/local.toml": "# upstream\n", "data/x.db": "x", "hpbooks/a.py": "\n"})
+    zipball = _zipball({"README.md": "new\n", "config/local.toml": "# upstream\n", "data/x.db": "x", "hpgbooks/a.py": "\n"})
     monkeypatch.setattr(update, "download_zip", lambda cfg, ref: zipball)
 
     assert run(update.cmd_check, root) == update.AVAILABLE
@@ -161,7 +161,7 @@ def test_zip_install_check_and_apply(tmp_path, monkeypatch, capsys):
     assert (root / "README.md").read_text() == "old\n"
     assert run(update.cmd_apply, root, yes=True) == update.UP_TO_DATE
     assert (root / "README.md").read_text() == "new\n"
-    assert (root / "hpbooks" / "a.py").exists()
+    assert (root / "hpgbooks" / "a.py").exists()
     assert (root / "config" / "local.toml").read_text() == "# mine\n"
     assert not (root / "data").exists()
     assert (root / update.REVISION_FILE).read_text().strip() == sha

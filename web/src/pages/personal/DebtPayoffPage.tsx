@@ -35,9 +35,11 @@ import {
 } from "../../lib/debtPayoff";
 import { formatDate, formatMoney, formatMonth } from "../../lib/format";
 
-export const STORAGE_KEY = "hpbooks.debtPayoff.v2";
+export const STORAGE_KEY = "hpgbooks.debtPayoff.v2";
 /** v1 had the same fields minus the scenario selection; it is carried over once and removed. */
 export const LEGACY_STORAGE_KEY = "hpbooks.debtPayoff.v1";
+/** compat: v2 under the pre-rename prefix; carried over once and removed. */
+export const PRE_RENAME_STORAGE_KEY = "hpbooks.debtPayoff.v2";
 /** Used for an account whose APR is not on file until you type one. */
 const UNKNOWN_APR = { card: 25, loan: 10 } as const;
 
@@ -98,6 +100,16 @@ function isObject(value: unknown): value is Record<string, unknown> {
 export function loadSettings(): Partial<Settings> {
   const current = readStorage<unknown>(STORAGE_KEY, null);
   if (isObject(current)) return current as Partial<Settings>;
+  const renamed = readStorage<unknown>(PRE_RENAME_STORAGE_KEY, null);
+  if (isObject(renamed)) {
+    writeStorage(STORAGE_KEY, renamed);
+    try {
+      window.localStorage.removeItem(PRE_RENAME_STORAGE_KEY);
+    } catch {
+      /* storage unavailable */
+    }
+    return renamed as Partial<Settings>;
+  }
   const legacy = readStorage<unknown>(LEGACY_STORAGE_KEY, null);
   if (!isObject(legacy)) return {};
   const migrated: Partial<Settings> = { ...(legacy as Partial<Settings>), selected: null, statusFor: null };

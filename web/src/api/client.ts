@@ -1,5 +1,5 @@
 /**
- * Fetch wrapper for the hpbooks JSON API. Same origin only. Mutations send
+ * Fetch wrapper for the hpgbooks JSON API. Same origin only. Mutations send
  * the session CSRF token in X-CSRF-Token; the token comes from /api/session.
  */
 

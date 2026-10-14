@@ -11,7 +11,7 @@ const OPTIONS: { value: Mode; label: string }[] = [
 /**
  * Business | Personal switch. Not the brand switcher: that one picks a
  * business inside Business mode. The choice is kept in the URL and in
- * localStorage (hpbooks.mode) and the date range carries over. Hidden when
+ * localStorage (hpgbooks.mode) and the date range carries over. Hidden when
  * the install has only one mode (features.business / features.personal).
  */
 export function ModeToggle({ compact }: { compact?: boolean }) {

@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 from personal_helpers import add_account, add_txn, anchor, make_db
 
-from hpbooks import payments as pay
-from hpbooks.db import connect
-from hpbooks.personal import debt
+from hpgbooks import payments as pay
+from hpgbooks.db import connect
+from hpgbooks.personal import debt
 
 TODAY = "2026-09-30"
 
@@ -111,7 +111,7 @@ def test_balances_match_the_payments_page(db):
 
 @pytest.fixture()
 def client(db):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     return create_app().test_client()
 

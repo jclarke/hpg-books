@@ -7,12 +7,12 @@ import io
 import pytest
 from openpyxl import load_workbook
 
-from hpbooks.analytics import global_search, vendor_report
-from hpbooks.cli import main
-from hpbooks.db import HpbooksError, connect, init_db
+from hpgbooks.analytics import global_search, vendor_report
+from hpgbooks.cli import main
+from hpgbooks.db import HpgbooksError, connect, init_db
 from fake_accounts import BANK
-from hpbooks.reports import query_transactions
-from hpbooks.vendors import canonical_name, merge_vendors, rename_canonical, suggest_duplicates, unmerge_vendor
+from hpgbooks.reports import query_transactions
+from hpgbooks.vendors import canonical_name, merge_vendors, rename_canonical, suggest_duplicates, unmerge_vendor
 
 KEY = "ab" * 32
 INTUIT_A = "ACH HOLD INTUIT PAYROLL"
@@ -121,16 +121,16 @@ def test_merge_combines_totals_and_unmerge_splits_them(env):
         assert actions.count("vendor_merge") == 1
         assert actions.count("vendor_unmerge") == 1
         assert actions.count("vendor_rename") == 1
-        with pytest.raises(HpbooksError, match="no alias"):
+        with pytest.raises(HpgbooksError, match="no alias"):
             unmerge_vendor(conn, INTUIT_A, actor="test")
-        with pytest.raises(HpbooksError, match="rename the canonical"):
+        with pytest.raises(HpgbooksError, match="rename the canonical"):
             rename_canonical(conn, INTUIT_B, "Somewhere Else", actor="test")
 
 
 def test_suggestions_and_idempotent_group_merge(env):
     with connect() as conn:
         _book(conn)
-        from hpbooks.vendors import load_aliases
+        from hpgbooks.vendors import load_aliases
 
         spending = {INTUIT_A: 1000, INTUIT_B: 2000, OTHER: 500}
         ideas = suggest_duplicates(spending, load_aliases(conn))
@@ -210,8 +210,8 @@ def test_suggestions_use_canonical_names_only(env):
         _insert(conn, "plain", "2026-06-03", -5000, "Intuit")
         _insert(conn, "decoy", "2026-06-04", -700, decoy)
         merge_vendors(conn, payroll, "Intuit Payroll", actor="test")
-        from hpbooks.analytics import vendor_suggestions
-        from hpbooks.vendors import load_aliases
+        from hpgbooks.analytics import vendor_suggestions
+        from hpgbooks.vendors import load_aliases
 
         stored = load_aliases(conn)
         page = vendor_suggestions(conn, "2026-06-01", "2026-06-30", "all")
@@ -233,7 +233,7 @@ def test_api_suggestions_omit_merged_spellings(env):
         _insert(conn, "decoy", "2026-06-04", -700, decoy)
         merge_vendors(conn, payroll, "Intuit Payroll", actor="test")
 
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     client = create_app().test_client()
     page = client.get("/api/vendors?start=2026-06-01&end=2026-06-30").get_json()
@@ -278,8 +278,8 @@ def test_cli_merge_unmerge_and_aliases(env, capsys):
 
 
 def test_api_filters_exports_and_csrf(env):
-    from hpbooks.analytics import build_dashboard_range
-    from hpbooks.web import create_app
+    from hpgbooks.analytics import build_dashboard_range
+    from hpgbooks.web import create_app
 
     with connect() as conn:
         _book(conn)
@@ -383,6 +383,6 @@ def test_reads_work_when_the_alias_table_is_missing(env):
         assert {row["merchant"] for row in rows} == {INTUIT_A, INTUIT_B, OTHER}
         found = global_search(conn, "INTUIT")
         assert any(row["name"] == INTUIT_A for row in found["vendors"])
-        from hpbooks.vendors import list_aliases
+        from hpgbooks.vendors import list_aliases
 
         assert list_aliases(conn) == []

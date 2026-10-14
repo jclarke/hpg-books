@@ -16,7 +16,7 @@ cp -p data/hpbooks.db data/hpbooks.db.bak-pre-manual-nw
 ```
 
 - Liabilities (class `loan` for a mortgage, auto or personal loan; `liability` for a card) are entered as the **amount owed** (positive). Assets (`investment`, `cash`, `other` for property and vehicles) are their value.
-- The account note is `manual: balance from <label> <date>, update manually` (`--label`, default Monarch). The `manual:` prefix is what `hpbooks accounts discover` looks for.
+- The account note is `manual: balance from <label> <date>, update manually` (`--label`, default Monarch). The `manual:` prefix is what `hpgbooks accounts discover` looks for.
 - Re-running with the same balance and date changes nothing; a new date adds an anchor and the newest one is the balance shown.
 - Only manual accounts can be refreshed this way, so a synced account is never given a hand-typed anchor. The script writes to `HPBOOKS_DB` / `data/hpbooks.db`; keep batch files with real balances out of git.
 

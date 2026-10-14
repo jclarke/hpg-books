@@ -44,7 +44,7 @@ export const personalSession: Session = {
   personal: {
     has_accounts: true,
     categories: pcategories,
-    setup_steps: ["bin/hpbooks accounts discover sync/inbox/YYYY-MM-DD/accounts/finance_list_accounts.json", "bin/hpbooks import sync/inbox/YYYY-MM-DD/"],
+    setup_steps: ["bin/hpgbooks accounts discover sync/inbox/YYYY-MM-DD/accounts/finance_list_accounts.json", "bin/hpgbooks import sync/inbox/YYYY-MM-DD/"],
   },
 };
 

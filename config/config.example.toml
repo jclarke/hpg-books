@@ -1,13 +1,13 @@
-# hpbooks site configuration — example with every key and its default.
+# hpgbooks site configuration — example with every key and its default.
 #
 # Copy to config/local.toml (gitignored) and edit, or point HPBOOKS_CONFIG at
 # another file. With no config file the built-in defaults below are used, and
-# `bin/hpbooks init` creates an empty ledger with generic categories and
+# `bin/hpgbooks init` creates an empty ledger with generic categories and
 # starter rules and no seeded accounts.
 #
 # Business tags and categories are written into the database's CHECK
 # constraints when the database is first created. Decide them before
-# `bin/hpbooks init`; changing them later needs a fresh database. Everything
+# `bin/hpgbooks init`; changing them later needs a fresh database. Everything
 # else can change at any time (restart the web server to pick it up).
 
 [app]
@@ -23,7 +23,7 @@ wordmark = "Books"              # logo text; defaults to product_name. The logo'
 
 [features]
 business = true    # business mode UI/CLI (ledger, P&L, rules, reports)
-personal = true    # personal mode UI/CLI (`hpbooks personal`, /personal pages)
+personal = true    # personal mode UI/CLI (`hpgbooks personal`, /personal pages)
                    # at least one of business / personal must be true
 whmcs = false      # WHMCS billing import, reports, and PayPal reconciliation
 # margins = false  # server margins; defaults to the whmcs value and needs whmcs = true
@@ -84,7 +84,7 @@ opex = [
 ]
 
 # --- business accounts seeded by `init` ----------------------------------------------
-# None by default: accounts are registered from imports (`bin/hpbooks accounts discover`).
+# None by default: accounts are registered from imports (`bin/hpgbooks accounts discover`).
 # type: cash | liability. short_name is the compact label in tables; any account whose
 # name starts with short_name_prefix gets it too. label is the short word used in copy
 # ("Money in Bank and PayPal"). roles:
@@ -146,7 +146,7 @@ applecard_account_id = "manual-apple-card"   # id of the account the Apple Card 
 "apple cash" = "apple cash"
 
 # --- loan payment hints ---------------------------------------------------------------
-# `hpbooks accounts infer-payments` learns a personal loan's payment amount and due day from the
+# `hpgbooks accounts infer-payments` learns a personal loan's payment amount and due day from the
 # bank rows that pay it. match is the loan's last 4, or a fragment of its name; pattern
 # is a regex for the bank description of the payment.
 # [[payments.payer_hints]]
@@ -155,7 +155,7 @@ applecard_account_id = "manual-apple-card"   # id of the account the Apple Card 
 
 # --- WHMCS (only read when features.whmcs = true) ----------------------------------------
 [whmcs]
-ssh_user = "hpbooks"
+ssh_user = "hpgbooks"
 ssh_key = "~/.ssh/hpbooks_whmcs"
 mysql_user = "books_ro"
 placeholder_credit_cents = 100000000      # credit at or above this ($1,000,000) is a placeholder, not money
@@ -187,7 +187,7 @@ paypal_account_role = "paypal"
 
 # --- updates --------------------------------------------------------------------------
 [update]
-# Upstream public snapshot repo for `hpbooks update check|apply`.
+# Upstream public snapshot repo for `hpgbooks update check|apply`.
 # Prefer a git remote named "public"; these keys are the fallback.
 repo = "jclarke/hpg-books"
 remote = "public"

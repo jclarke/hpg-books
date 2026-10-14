@@ -3,20 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>hpbooks: private, encrypted books for your business and household</title>
-  <meta name="description" content="A local, encrypted bookkeeping app for a small business and a household. Business P&amp;L, personal net worth, budgets, and bills, on your own computer. Install it by asking Grok Bot.">
+  <title>HPG Books: private, encrypted books for your business and household</title>
+  <meta name="description" content="HPG Books is a local, encrypted bookkeeping app for a small business and a household. Business P&amp;L, personal net worth, budgets, and bills, on your own Grok Bot cloud computer. Start from the Grok Bot template.">
   <meta name="color-scheme" content="light dark">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="topbar">
     <div class="wrap topbar__inner">
-      <a class="brand" href="#top"><span class="brand__mark">B</span> hpbooks</a>
+      <a class="brand" href="#top"><span class="brand__mark">B</span> HPG Books</a>
       <nav class="nav">
         <a href="#features">Features</a>
         <a href="#modes">Business &amp; personal</a>
         <a href="#privacy">Privacy</a>
         <a href="#grok">Get it</a>
+        <a href="#routines">Routines</a>
         <a href="#screens">Screenshots</a>
         <a class="nav__gh" href="https://github.com/jclarke/hpg-books">GitHub</a>
       </nav>
@@ -27,11 +28,12 @@
     <section class="hero">
       <div class="wrap hero__inner">
         <div class="hero__copy">
-          <p class="eyebrow">Open source · runs on your own computer</p>
+          <p class="eyebrow">Open source · runs on your own Grok Bot cloud computer</p>
           <h1>Your books, on your machine, encrypted.</h1>
-          <p class="lead">hpbooks imports your bank and card transactions, sorts them with rules you control, and gives you a P&amp;L for the business and net worth, budgets, and bills for the household. In one encrypted database, with nothing sent anywhere.</p>
+          <p class="lead">HPG Books imports your bank and card transactions, sorts them with rules you control, and gives you a P&amp;L for the business and net worth, budgets, and bills for the household. In one encrypted database, with nothing sent anywhere.</p>
           <div class="cta">
-            <a class="btn btn--primary" href="#grok">Get it with Grok Bot</a>
+            <a class="btn btn--primary" href="https://x.ai/bot/gHLmbUpkuYNbv0F-J2JwC">Get the Grok Bot template</a>
+            <a class="btn" href="#grok">How to install</a>
             <a class="btn" href="https://github.com/jclarke/hpg-books">View on GitHub</a>
           </div>
         </div>
@@ -70,7 +72,7 @@
           </article>
           <article class="card">
             <h3>Stay current</h3>
-            <p><code>hpbooks update check</code> tells you when there's a new version; updates only fast-forward and never touch your data or config.</p>
+            <p><code>hpgbooks update check</code> tells you when there's a new version; updates only fast-forward and never touch your data or config.</p>
           </article>
         </div>
       </div>
@@ -130,6 +132,14 @@
     <section id="grok" class="section section--alt">
       <div class="wrap">
         <h2>Get it with Grok Bot</h2>
+        <div class="template-cta">
+          <div>
+            <h3>Start from the Grok Bot template</h3>
+            <p>The template sets up a Grok Bot with the books app, its skills, and the routines below. Grok Bot installs everything on its own cloud computer and asks you a few questions; nothing runs on your laptop.</p>
+          </div>
+          <a class="btn btn--primary" href="https://x.ai/bot/gHLmbUpkuYNbv0F-J2JwC">Get the Grok Bot template</a>
+        </div>
+        <p class="note">Or set it up from a plain chat:</p>
         <ol class="steps">
           <li>
             <h3>Ask Grok Bot to install it</h3>
@@ -152,13 +162,48 @@
               <li>"Export a PDF report"</li>
               <li>"Check for updates"</li>
             </ul>
-            <p>Grok Bot can also run the sync and the update check on a schedule.</p>
+            <p>Grok Bot can also run the syncs, the health check, and the update check on a schedule. See <a href="#routines">the routines</a>.</p>
           </li>
           <li>
             <h3>Open the web app</h3>
             <p>On the computer where the books run, go to <code>http://127.0.0.1:8765</code>. To open it from elsewhere, ask Grok Bot to set up Tailscale for your books.</p>
           </li>
         </ol>
+        <h3 id="routines" class="routines__title">Grok Bot routines to keep it updated</h3>
+        <p class="note">The template schedules these for you; set them up by hand from a plain chat if you didn't start from it. Times are suggestions in your own timezone, spread out so the jobs don't overlap.</p>
+        <div class="routines">
+          <article class="routine">
+            <h4>Daily business books sync</h4>
+            <p class="routine__when">Weekdays, about 7:20am</p>
+            <p>Pulls recent transactions for your business accounts through the Finance connector, imports them (re-imports never duplicate), refreshes balances, applies your rules, and tells you what still needs a decision.</p>
+          </article>
+          <article class="routine">
+            <h4>Daily personal books sync</h4>
+            <p class="routine__when">Every day, about 7:43am</p>
+            <p>The same for your personal accounts: new transactions, balances, and net worth, plus anything new in the review queue.</p>
+          </article>
+          <article class="routine">
+            <h4>Daily payment due dates update</h4>
+            <p class="routine__when">Every day, about 8:12am</p>
+            <p>Refreshes minimum payments, due dates, and APRs for your cards and loans, so the Bills page and "When are my cards due?" stay current.</p>
+          </article>
+          <article class="routine">
+            <h4>Weekly Monarch pull</h4>
+            <p class="routine__when">Sundays</p>
+            <p>For accounts the Finance connector doesn't cover, pulls a Monarch export and imports only the rows the ledger is missing, then updates those accounts' balances.</p>
+          </article>
+          <article class="routine">
+            <h4>Books app health check</h4>
+            <p class="routine__when">Every 30 minutes</p>
+            <p>Checks that the web server answers. If it is down it restarts the server, and Tailscale too when remote access is set up. Quiet when everything is fine.</p>
+          </article>
+          <article class="routine">
+            <h4>Update checker</h4>
+            <p class="routine__when">Every day</p>
+            <p>Runs <code>bin/hpgbooks update check</code> and only messages you when there is a new version. It never applies an update on its own.</p>
+          </article>
+        </div>
+        <p class="note">The template also ships three skills: <strong>books-getting-started</strong> (first install and setup), <strong>daily-books-sync</strong> (the business sync), and <strong>daily-personal-books-sync</strong> (the personal sync).</p>
         <p class="note">Prefer to do it yourself? The <a href="https://github.com/jclarke/hpg-books#install">install steps</a> are in the README.</p>
       </div>
     </section>
@@ -190,7 +235,7 @@
 
   <footer class="footer">
     <div class="wrap footer__inner">
-      <span>hpbooks · local, encrypted bookkeeping</span>
+      <span>HPG Books · local, encrypted bookkeeping</span>
       <a href="https://github.com/jclarke/hpg-books">github.com/jclarke/hpg-books</a>
     </div>
   </footer>

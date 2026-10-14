@@ -7,10 +7,10 @@ import json
 
 import pytest
 
-from hpbooks import margins as mg
-from hpbooks.access import clear_passphrase_cache, reset_lockout
-from hpbooks.cli import main
-from hpbooks.db import MIGRATIONS, HpbooksError, _apply_migrations, connect, init_db, now_iso
+from hpgbooks import margins as mg
+from hpgbooks.access import clear_passphrase_cache, reset_lockout
+from hpgbooks.cli import main
+from hpgbooks.db import MIGRATIONS, HpgbooksError, _apply_migrations, connect, init_db, now_iso
 
 KEY = "c3" * 32
 SECRET = "correct-horse-battery"
@@ -107,8 +107,8 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setenv("HPBOOKS_KEY", KEY)
     monkeypatch.setenv("HPBOOKS_DB", str(tmp_path / "books.db"))
     monkeypatch.delenv("HPBOOKS_KEY_FILE", raising=False)
-    monkeypatch.delenv("HPBOOKS_ALLOWED_HOSTS", raising=False)
-    monkeypatch.delenv("HPBOOKS_NEW_PASSPHRASE", raising=False)
+    monkeypatch.delenv("HPGBOOKS_ALLOWED_HOSTS", raising=False)
+    monkeypatch.delenv("HPGBOOKS_NEW_PASSPHRASE", raising=False)
     init_db()
     reset_lockout()
     clear_passphrase_cache()
@@ -162,7 +162,7 @@ def test_migration_on_an_existing_database_keeps_its_data(env):
         services = conn.execute("SELECT COUNT(*) FROM whmcs_services").fetchone()[0]
     with connect(readonly=True) as conn:
         assert not mg.margins_ready(conn)
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             mg.build(conn)
     with connect() as conn:
         assert mg.margins_ready(conn)
@@ -303,9 +303,9 @@ def test_whatif_merge(seeded):
     assert result["mrr_cents"] == 37500
     ded = next(row for row in result["servers"] if row["id"] == ids["DED"])
     assert (ded["revenue_after_cents"], ded["margin_after_cents"]) == (23000, 8000)
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         mg.whatif(report, merge=(ids["VM"], ids["VM"]))
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         mg.whatif(report, merge=(ids["VM"], ids["GONE"]))
 
 
@@ -351,9 +351,9 @@ def test_seed_rejects_bad_files(env, tmp_path):
         {"servers": [{"slug": "A", "label": "L", "mappings": [{"rule_type": "sql", "rule_value": "1"}]}]},
     ):
         bad.write_text(json.dumps(data), encoding="utf-8")
-        with connect() as conn, pytest.raises(HpbooksError):
+        with connect() as conn, pytest.raises(HpgbooksError):
             mg.seed(conn, bad)
-    with connect() as conn, pytest.raises(HpbooksError):
+    with connect() as conn, pytest.raises(HpgbooksError):
         mg.seed(conn, tmp_path / "missing.json")
 
 
@@ -393,7 +393,7 @@ def test_edit_validation(seeded):
             lambda: mg.add_overhead(conn, "Licenses", "1"),
             lambda: mg.add_overhead(conn, "New", "1", kind="maybe"),
         ):
-            with pytest.raises(HpbooksError):
+            with pytest.raises(HpgbooksError):
                 call()
 
 
@@ -401,7 +401,7 @@ def test_edit_validation(seeded):
 
 
 def _client(extra_hosts=None):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     app = create_app()
     if extra_hosts is not None:
@@ -472,7 +472,7 @@ def test_api_rejects_bad_input(seeded):
 
 
 def test_api_needs_sign_in_on_the_tailnet(seeded, monkeypatch):
-    monkeypatch.setenv("HPBOOKS_NEW_PASSPHRASE", SECRET)
+    monkeypatch.setenv("HPGBOOKS_NEW_PASSPHRASE", SECRET)
     assert main(["web-passphrase", "set"]) == 0
     clear_passphrase_cache()
     client = _client([HOST])
@@ -486,7 +486,7 @@ def test_api_needs_sign_in_on_the_tailnet(seeded, monkeypatch):
 
 
 def test_api_handler_checks_sign_in_itself(seeded, monkeypatch):
-    import hpbooks.margins_api as module
+    import hpgbooks.margins_api as module
 
     monkeypatch.setattr(module, "request_requires_login", lambda: True)
     monkeypatch.setattr(module, "session_is_authenticated", lambda: False)

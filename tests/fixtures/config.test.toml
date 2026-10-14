@@ -150,7 +150,7 @@ prior_business = "branda"
 "AI services" = "AI Tools"
 
 [whmcs]
-ssh_user = "hpbooks"
+ssh_user = "hpgbooks"
 ssh_key = "~/.ssh/example_whmcs_key"
 mysql_user = "books_ro"
 revenue_category = "Revenue - Hosting"

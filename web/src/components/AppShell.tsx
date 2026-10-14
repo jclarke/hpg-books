@@ -60,8 +60,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (session.isError || !session.data) {
     return (
       <div className="boot">
-        <EmptyState icon="alert" tone="error" title="Can't reach the hpbooks server" action={<button type="button" className="btn btn--primary" onClick={() => session.refetch()}>Retry</button>}>
-          Start it with <code>bin/hpbooks web</code> and reload. {session.error instanceof Error ? session.error.message : ""}
+        <EmptyState icon="alert" tone="error" title="Can't reach the HPG Books server" action={<button type="button" className="btn btn--primary" onClick={() => session.refetch()}>Retry</button>}>
+          Start it with <code>bin/hpgbooks web</code> and reload. {session.error instanceof Error ? session.error.message : ""}
         </EmptyState>
       </div>
     );

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Compare a Capital One CSV export to statement PDFs.
 
-Invoked by `hpbooks verify-capitalone`. Can also be run directly:
+Invoked by `hpgbooks verify-capitalone`. Can also be run directly:
 
     .venv/bin/python sync/verify_capone_statements.py --csv FILE --statements PDF...
 """
@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from hpbooks.cli import main  # noqa: E402
+from hpgbooks.cli import main  # noqa: E402
 
 
 if __name__ == "__main__":

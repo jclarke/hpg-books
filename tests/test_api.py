@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from hpbooks.cli import main
-from hpbooks.db import connect, init_db
+from hpgbooks.cli import main
+from hpgbooks.db import connect, init_db
 from fake_accounts import BANK, REWARDS
-from hpbooks.reports import build_pnl
+from hpgbooks.reports import build_pnl
 
 KEY = "cd" * 32
 
@@ -95,7 +95,7 @@ def books(env):
 
 @pytest.fixture()
 def client(books):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     return create_app().test_client()
 
@@ -271,7 +271,7 @@ def test_pnl_keeps_empty_months_and_matches_transfer_memo_prior(client, env, tmp
     assert main(["import", str(feed)]) == 0
     for txn_id in ("xfer-feb", "xfer-mar-a", "xfer-mar-b"):
         assert main(["classify", txn_id, "--tag", "transfer", "--category", "Transfer"]) == 0
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     fresh = create_app().test_client()
     march = fresh.get("/api/pnl?start=2026-03-01&end=2026-03-31&by=month").get_json()
@@ -396,7 +396,7 @@ def test_spa_is_served_with_strict_csp(client):
     assert "immutable" in served.headers["Cache-Control"]
     assert client.get("/app/favicon.svg").status_code == 200
     assert client.get("/app/assets/nope.js").status_code == 404
-    assert client.get("/app/../../hpbooks/db.py").status_code == 404
+    assert client.get("/app/../../hpgbooks/db.py").status_code == 404
     unknown = client.get("/definitely-not-a-page")
     assert unknown.status_code == 404
     assert b'<div id="root">' in unknown.data

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from hpbooks.analytics import (
+from hpgbooks.analytics import (
     account_register,
     build_dashboard,
     cash_flow_report,
@@ -18,10 +18,10 @@ from hpbooks.analytics import (
     schedule_c_report,
     vendor_report,
 )
-from hpbooks.cli import main
-from hpbooks.db import connect, init_db, set_setting
+from hpgbooks.cli import main
+from hpgbooks.db import connect, init_db, set_setting
 from fake_accounts import BANK, REWARDS
-from hpbooks.reports import _load_txns, build_pnl, prior_period, with_prior_period
+from hpgbooks.reports import _load_txns, build_pnl, prior_period, with_prior_period
 
 KEY = "ab" * 32
 
@@ -122,7 +122,7 @@ def test_dashboard_matches_pnl_and_moves_month_over_month(env, tmp_path):
     assert dash["points"][0]["month"] == "2026-01"
     assert dash["points"][-1]["month"] == "2026-09"
 
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     client = create_app().test_client()
     page = client.get("/api/dashboard?start=2026-09-01&end=2026-09-30&business=all")
@@ -159,7 +159,7 @@ def test_dashboard_chart_uses_the_full_month_when_the_range_ends_early(env, tmp_
     assert main(["import", str(feed)]) == 0
     for txn_id in ("chart-early", "chart-late", "chart-oct"):
         assert main(["classify", txn_id, "--tag", "branda", "--category", "Revenue - Hosting"]) == 0
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     client = create_app().test_client()
     partial = client.get("/api/dashboard?start=2026-09-01&end=2026-09-15").get_json()
@@ -190,7 +190,7 @@ def test_transactions_filters_sort_and_csv(env, tmp_path):
         ],
     )
     assert main(["import", str(feed)]) == 0
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     client = create_app().test_client()
     narrow = client.get("/api/transactions?month=2026-05&min_amount=-10&max_amount=0&sort=amount&dir=asc")
@@ -231,7 +231,7 @@ def test_accounts_register_running_balance(env, tmp_path):
     assert second[0]["deposit_cents"] == 10000
     assert second[0]["running_cents"] == 10000
 
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     client = create_app().test_client()
     page = client.get("/api/accounts?start=2026-04-01&end=2026-04-30")
@@ -291,7 +291,7 @@ def test_reports_exports_and_vendor_rules(env, tmp_path):
         assert bank_june[2].cents == 10000
         assert bank_june[3].cents == 5100
         assert not any("Rewards" in row[1].text or "0303" in row[1].text for row in flow.rows)
-        from hpbooks.analytics import owner_draws_report
+        from hpgbooks.analytics import owner_draws_report
 
         draws = owner_draws_report(conn, "2026-06-01", "2026-06-30")
         assert any(cell.cents == 800 for row in draws.rows for cell in row if cell.cents is not None)
@@ -309,7 +309,7 @@ def test_reports_exports_and_vendor_rules(env, tmp_path):
         assert compared.prior_values is not None
         assert len(compared.prior_values) == len(compared.rows)
 
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     client = create_app().test_client()
     index = client.get("/api/reports/schedule-c?start=2026-06-01&end=2026-06-30")
@@ -373,7 +373,7 @@ def test_review_bulk_calendar_and_audit(env, tmp_path):
     assert outlook["after_reserve_cents"] == outlook["ending_cents"] - 5000
     assert any(row["date"] == "2026-10-02" for row in outlook["timeline"])
 
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     client = create_app().test_client()
     review = client.get("/api/review")

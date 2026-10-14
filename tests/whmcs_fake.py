@@ -6,7 +6,7 @@ import copy
 from datetime import date, datetime
 from decimal import Decimal
 
-from hpbooks.whmcs import SOURCE_COLUMNS, build_select
+from hpgbooks.whmcs import SOURCE_COLUMNS, build_select
 
 D = Decimal
 

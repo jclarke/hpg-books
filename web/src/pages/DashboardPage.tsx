@@ -256,7 +256,7 @@ function WhmcsWidget({ to }: { to: string }) {
         <SkeletonCard height={80} />
       ) : !data.ready ? (
         <EmptyState icon="server" title="WHMCS has not been synced yet" compact>
-          Run <code>bin/hpbooks whmcs sync</code> to load billing data.
+          Run <code>bin/hpgbooks whmcs sync</code> to load billing data.
         </EmptyState>
       ) : (
         <>

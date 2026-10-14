@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from hpbooks import config as hpconfig
-from hpbooks.config import ConfigError, build, load_rules_file
+from hpgbooks import config as hpconfig
+from hpgbooks.config import ConfigError, build, load_rules_file
 
 ROOT = Path(__file__).resolve().parent.parent
 KEY = "cd" * 32
@@ -65,14 +65,14 @@ WHMCS_GETS = [
 ]
 
 # Runs in a child process: business tags and categories are fixed at import,
-# and this test process already imported hpbooks with the test config.
+# and this test process already imported hpgbooks with the test config.
 FRESH_SCRIPT = textwrap.dedent(
     """
     import json, sys
-    from hpbooks.cli import main
+    from hpgbooks.cli import main
     assert main(["init"]) == 0
-    from hpbooks.db import connect
-    from hpbooks.web import create_app
+    from hpgbooks.db import connect
+    from hpgbooks.web import create_app
     out = {"statuses": {}, "bodies": {}}
     client = create_app().test_client()
     for url in json.loads(sys.argv[1]):
@@ -86,7 +86,7 @@ FRESH_SCRIPT = textwrap.dedent(
         out["p_categories"] = conn.execute("SELECT COUNT(*) FROM p_categories").fetchone()[0]
         out["p_rules"] = conn.execute("SELECT COUNT(*) FROM p_rules").fetchone()[0]
         out["schema"] = conn.execute("SELECT sql FROM sqlite_master WHERE name = 'rules'").fetchone()[0]
-    from hpbooks.seed_rules import STARTER_RULES, rule_specs
+    from hpgbooks.seed_rules import STARTER_RULES, rule_specs
     specs = rule_specs()
     out["starter"] = {"total": len(STARTER_RULES), "resolved": len(specs),
                       "stripe": sorted({spec[6] for spec in specs if "STRIPE" in spec[1]})}
@@ -98,12 +98,12 @@ FRESH_SCRIPT = textwrap.dedent(
 
 
 def test_fresh_install_with_no_config_works(tmp_path):
-    env = {key: value for key, value in os.environ.items() if not key.startswith("HPBOOKS_")}
+    env = {key: value for key, value in os.environ.items() if not key.startswith(("HPGBOOKS_", "HPBOOKS_"))}
     env.update(
         HPBOOKS_DB=str(tmp_path / "data" / "hpbooks.db"),
         HPBOOKS_KEY=KEY,
         HPBOOKS_CONFIG=str(tmp_path / "missing.toml"),
-        HPBOOKS_SEED_CSV="",
+        HPGBOOKS_SEED_CSV="",
     )
     urls = BUSINESS_GETS + PERSONAL_GETS + WHMCS_GETS
     proc = subprocess.run(
@@ -188,7 +188,7 @@ def test_whmcs_defaults_and_revenue_category():
 
 
 def test_seed_prior_status_marks_business_rows(tmp_path, monkeypatch):
-    from hpbooks.classify import _seed_decision, reset_seed_cache
+    from hpgbooks.classify import _seed_decision, reset_seed_cache
 
     seed_csv = tmp_path / "prior.csv"
     seed_csv.write_text(
@@ -198,7 +198,7 @@ def test_seed_prior_status_marks_business_rows(tmp_path, monkeypatch):
         "t-unmapped,business,Unknown,\n",
         encoding="utf-8",
     )
-    monkeypatch.setenv("HPBOOKS_SEED_CSV", str(seed_csv))
+    monkeypatch.setenv("HPGBOOKS_SEED_CSV", str(seed_csv))
     reset_seed_cache()
     try:
         assert build({"seed": {"prior_status": "keep"}}).prior_status == "keep"
@@ -213,7 +213,7 @@ def test_seed_prior_status_marks_business_rows(tmp_path, monkeypatch):
 
 
 def test_schedule_c_lines_follow_the_configured_categories():
-    from hpbooks.analytics import _cogs_line_label, _schedule_c_lines
+    from hpgbooks.analytics import _cogs_line_label, _schedule_c_lines
 
     defaults = build({})
     hpconfig.override(opex_categories=defaults.opex_categories, cogs_categories=defaults.cogs_categories)
@@ -258,8 +258,8 @@ def test_schedule_c_lines_follow_the_configured_categories():
 
 def test_schedule_c_report_with_the_test_categories(tmp_path, monkeypatch):
     """The test config lacks most Schedule C categories; the report still adds up."""
-    from hpbooks.analytics import schedule_c_report
-    from hpbooks.db import connect, init_db
+    from hpgbooks.analytics import schedule_c_report
+    from hpgbooks.db import connect, init_db
 
     monkeypatch.setenv("HPBOOKS_KEY", KEY)
     monkeypatch.setenv("HPBOOKS_DB", str(tmp_path / "books.db"))
@@ -376,7 +376,7 @@ def test_missing_config_file_means_defaults(tmp_path, monkeypatch):
 
 
 def test_starter_rules_resolve_against_the_config():
-    from hpbooks.seed_rules import STARTER_RULES, rule_specs
+    from hpgbooks.seed_rules import STARTER_RULES, rule_specs
 
     hpconfig.override(starter_rules=True, rules_file=None)
     specs = rule_specs()
@@ -397,9 +397,9 @@ def test_starter_rules_resolve_against_the_config():
 def app_env(tmp_path, monkeypatch):
     monkeypatch.setenv("HPBOOKS_KEY", KEY)
     monkeypatch.setenv("HPBOOKS_DB", str(tmp_path / "books.db"))
-    monkeypatch.setenv("HPBOOKS_SEED_CSV", str(tmp_path / "no-seed.csv"))
+    monkeypatch.setenv("HPGBOOKS_SEED_CSV", str(tmp_path / "no-seed.csv"))
     monkeypatch.delenv("HPBOOKS_KEY_FILE", raising=False)
-    from hpbooks.db import init_db
+    from hpgbooks.db import init_db
 
     init_db()
     return tmp_path
@@ -407,7 +407,7 @@ def app_env(tmp_path, monkeypatch):
 
 @pytest.mark.whmcs_on
 def test_config_endpoint_with_whmcs_on(app_env):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     body = create_app().test_client().get("/api/config").get_json()
     assert body["product"] == "Example Books" and body["wordmark"] == "Example"
@@ -421,7 +421,7 @@ def test_config_endpoint_with_whmcs_on(app_env):
 
 
 def test_whmcs_routes_404_when_disabled(app_env, whmcs_off):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     client = create_app().test_client()
     for url in WHMCS_GETS + ["/api/whmcs/customers?q=a", "/api/margins/servers"]:
@@ -436,7 +436,7 @@ def test_whmcs_routes_404_when_disabled(app_env, whmcs_off):
 
 @pytest.mark.whmcs_on
 def test_margins_routes_404_when_only_margins_disabled(app_env):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     hpconfig.override(margins_enabled=False)
     client = create_app().test_client()
@@ -445,7 +445,7 @@ def test_margins_routes_404_when_only_margins_disabled(app_env):
 
 
 def test_whmcs_cli_disabled_message(app_env, whmcs_off, capsys):
-    from hpbooks.cli import main
+    from hpgbooks.cli import main
 
     assert main(["whmcs", "status"]) == 2
     assert main(["margins", "show"]) == 2
@@ -465,8 +465,8 @@ def test_business_and_personal_flags_default_on():
 
 
 def test_personal_off_hides_cli_and_api(app_env, capsys):
-    from hpbooks.cli import main
-    from hpbooks.web import create_app
+    from hpgbooks.cli import main
+    from hpgbooks.web import create_app
 
     hpconfig.override(personal_enabled=False)
     assert main(["personal", "dashboard"]) == 2
@@ -478,7 +478,7 @@ def test_personal_off_hides_cli_and_api(app_env, capsys):
 
 
 def test_business_off_hides_business_cli(app_env, capsys):
-    from hpbooks.cli import main
+    from hpgbooks.cli import main
 
     hpconfig.override(business_enabled=False)
     assert main(["pnl"]) == 2

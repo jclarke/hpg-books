@@ -2,7 +2,7 @@
 
 Tests read tests/fixtures/config.test.toml (fake businesses, accounts, and
 WHMCS brands), never config/local.toml. HPBOOKS_CONFIG is set before any
-hpbooks module is imported because business tags and categories are fixed at import.
+hpgbooks module is imported because business tags and categories are fixed at import.
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ os.environ["HPBOOKS_CONFIG"] = str(TEST_CONFIG)
 
 import pytest  # noqa: E402
 
-import hpbooks.config as hpconfig  # noqa: E402
-import hpbooks.db as hpdb  # noqa: E402
+import hpgbooks.config as hpconfig  # noqa: E402
+import hpgbooks.db as hpdb  # noqa: E402
 
 hpconfig.reset()
 
@@ -30,16 +30,17 @@ def _is_real(path: str) -> bool:
     return resolved == REAL_DB or resolved.startswith(REAL_DATA + os.sep) or resolved == REAL_KEY
 
 
-# HPBOOKS_TEST_WHMCS=off runs the suite with the WHMCS integration switched off
+# HPGBOOKS_TEST_WHMCS=off runs the suite with the WHMCS integration switched off
 # (the WHMCS and margins test modules are skipped): nothing else may depend on it.
-WHMCS_OFF = os.environ.get("HPBOOKS_TEST_WHMCS", "on") == "off"
+# HPBOOKS_TEST_WHMCS is the pre-rename name, still honoured (compat).
+WHMCS_OFF = os.environ.get("HPGBOOKS_TEST_WHMCS", os.environ.get("HPBOOKS_TEST_WHMCS", "on")) == "off"
 WHMCS_MODULES = ("test_whmcs.py", "test_whmcs_api.py", "test_whmcs_reports.py", "test_margins.py")
 
 
 def pytest_collection_modifyitems(config, items):
     if not WHMCS_OFF:
         return
-    skip = pytest.mark.skip(reason="HPBOOKS_TEST_WHMCS=off")
+    skip = pytest.mark.skip(reason="HPGBOOKS_TEST_WHMCS=off")
     for item in items:
         if item.path.name in WHMCS_MODULES or "whmcs_on" in item.keywords:
             item.add_marker(skip)

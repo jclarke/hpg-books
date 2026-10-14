@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 from personal_helpers import add_account, add_txn, cat_id, classify_all, make_db
 
-from hpbooks import monarch
-from hpbooks.db import HpbooksError, connect
+from hpgbooks import monarch
+from hpgbooks.db import HpgbooksError, connect
 
 HEADER = "Date,Merchant,Category,Account,Original Statement,Notes,Amount,Tags,Owner,Business Entity,Reviewed,Id\n"
 
@@ -46,13 +46,13 @@ def db(tmp_path, monkeypatch):
 def test_parse_csv_signs_and_header():
     rows = monarch.parse_csv_text(CSV)
     assert len(rows) == 7 and rows[0].amount_cents == 10000 and rows[1].amount_cents == -2000 and rows[0].txn_id == "monarch:1001"
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         monarch.parse_csv_text("a,b\n1,2\n")
 
 
 def _alias_savings():
     """Site config: Monarch's "Savings" account is the one named Apple Savings."""
-    from hpbooks import config as hpconfig
+    from hpgbooks import config as hpconfig
 
     aliases = {**hpconfig.get_config().importers.monarch_aliases, "savings": "apple savings"}
     hpconfig.override(importers=hpconfig.ImportersConfig(monarch_aliases=aliases))
@@ -175,7 +175,7 @@ def test_rules_from_monarch_hints_leave_manual_decisions_alone(db):
         add_txn(conn, "m1", "card1", "2099-03-15", -900, "MIXEDSTORE")
         add_txn(conn, "m2", "card1", "2099-03-16", -900, "MIXEDSTORE")
         classify_all(conn)
-        from hpbooks.personal.classify import write_personal
+        from hpgbooks.personal.classify import write_personal
 
         groceries = cat_id(conn, "Food", "Groceries")
         write_personal(conn, "p3", groceries, "manual", 1.0, "test-user", overwrite_manual=True, actor="test", audit_write=False)
@@ -210,7 +210,7 @@ def test_script_reports_then_applies(db, tmp_path, capsys):
 
 
 def test_default_and_configured_aliases(db):
-    from hpbooks import config as hpconfig
+    from hpgbooks import config as hpconfig
 
     assert hpconfig.build({}).importers.monarch_aliases == {"apple card": "apple card", "apple cash": "apple cash"}
     with connect() as conn:

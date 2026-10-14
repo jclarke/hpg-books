@@ -29,7 +29,7 @@ def test_business_outputs_match_golden(ledger):
 def _add_personal_rows_directly(tmp_path) -> None:
     """Personal accounts (via discover) and raw personal transactions that look like business ones."""
     from golden_fixture import run_cli
-    from hpbooks.db import connect
+    from hpgbooks.db import connect
     from personal_fake import CARD_A, CHECKING, accounts_payload, transactions
 
     payload = tmp_path / "accounts.json"
@@ -69,10 +69,10 @@ def test_business_outputs_unchanged_with_personal_rows_in_the_same_db(ledger):
 def test_business_outputs_unchanged_after_full_personal_import(ledger):
     """Discover, import 14 months of fake personal data, run personal rules, transfers, and edits."""
     from golden_fixture import run_cli
-    from hpbooks.db import connect
-    from hpbooks.personal import actions
-    from hpbooks.personal.analytics import refresh_recurring
-    from hpbooks.personal.classify import reclassify_personal
+    from hpgbooks.db import connect
+    from hpgbooks.personal import actions
+    from hpgbooks.personal.analytics import refresh_recurring
+    from hpgbooks.personal.classify import reclassify_personal
     from personal_fake import write_inbox
 
     day = write_inbox(ledger / "inbox")

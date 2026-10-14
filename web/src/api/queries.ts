@@ -142,7 +142,7 @@ export function useSearch(q: string, mode: "business" | "personal" = "business")
   });
 }
 
-// --- WHMCS billing (read-only; refreshed by `hpbooks whmcs sync`) ----------------
+// --- WHMCS billing (read-only; refreshed by `hpgbooks whmcs sync`) ----------------
 
 type Ready<T> = T | WhmcsNotReady;
 

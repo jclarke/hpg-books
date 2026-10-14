@@ -23,8 +23,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from hpbooks import monarch  # noqa: E402
-from hpbooks.db import HpbooksError, connect  # noqa: E402
+from hpgbooks import monarch  # noqa: E402
+from hpgbooks.db import HpgbooksError, connect  # noqa: E402
 
 
 def money(cents: int) -> str:
@@ -96,7 +96,7 @@ def main(argv: list[str] | None = None) -> int:
                         conn.rollback()
                         print(f"stopped: {len(outcome['unexpected'])} rows that were already categorized would change; nothing written", file=sys.stderr)
                         return 1
-                    from hpbooks.personal.queries import review_queue
+                    from hpgbooks.personal.queries import review_queue
 
                     print(f"created {len(result['rules'])} rules; {outcome['moved']} rows moved out of Uncategorized; review queue now {len(review_queue(conn))}")
                 else:
@@ -119,8 +119,8 @@ def main(argv: list[str] | None = None) -> int:
                 for key in st["unpaired"]:
                     print(f"    un-paired a false transfer match: {key}")
                 for key in st["ambiguous"]:
-                    print(f"    check by hand (more than one candidate): hpbooks personal transfers confirm|reject '{key}'")
-    except (HpbooksError, OSError, ValueError) as exc:
+                    print(f"    check by hand (more than one candidate): hpgbooks personal transfers confirm|reject '{key}'")
+    except (HpgbooksError, OSError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     return 0

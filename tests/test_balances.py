@@ -6,16 +6,16 @@ import pytest
 
 from datetime import date
 
-from hpbooks.analytics import account_register, accounts_range, build_dashboard_range, cash_outlook
-from hpbooks.balances import (
+from hpgbooks.analytics import account_register, accounts_range, build_dashboard_range, cash_outlook
+from hpgbooks.balances import (
     account_snapshots,
     anchor_history,
     parse_dollars,
     set_anchor,
     snapshot_for,
 )
-from hpbooks.cli import main
-from hpbooks.db import ACCOUNTS, HpbooksError, connect, init_db
+from hpgbooks.cli import main
+from hpgbooks.db import ACCOUNTS, HpgbooksError, connect, init_db
 from fake_accounts import BANK, REWARDS
 
 KEY = "ef" * 32
@@ -81,15 +81,15 @@ def test_parse_dollars_accepts_money_text_and_rejects_junk():
     assert parse_dollars("-25") == -2500
     assert parse_dollars(80) == 8000
     assert parse_dollars(80.1) == 8010
-    with pytest.raises(HpbooksError, match="balance is required"):
+    with pytest.raises(HpgbooksError, match="balance is required"):
         parse_dollars("")
-    with pytest.raises(HpbooksError, match="balance is required"):
+    with pytest.raises(HpgbooksError, match="balance is required"):
         parse_dollars(True)
-    with pytest.raises(HpbooksError, match="balance must be a dollar amount"):
+    with pytest.raises(HpgbooksError, match="balance must be a dollar amount"):
         parse_dollars("80.123")
-    with pytest.raises(HpbooksError, match="balance must be a dollar amount"):
+    with pytest.raises(HpgbooksError, match="balance must be a dollar amount"):
         parse_dollars("nope")
-    with pytest.raises(HpbooksError, match="balance is out of range"):
+    with pytest.raises(HpgbooksError, match="balance is out of range"):
         parse_dollars("100000000.01")
 
 
@@ -279,16 +279,16 @@ def test_cli_and_validation(env, capsys):
             (BANK,),
         ).fetchone()["note"]
         assert stored is None
-        with pytest.raises(HpbooksError, match="note is too long"):
+        with pytest.raises(HpgbooksError, match="note is too long"):
             set_anchor(conn, BANK, 100, "2026-04-02", "statement", "x" * 501, actor="cli")
-        with pytest.raises(HpbooksError, match="source must be finance or statement"):
+        with pytest.raises(HpgbooksError, match="source must be finance or statement"):
             set_anchor(conn, BANK, 100, "2026-04-02", "guess", "", actor="cli")
-        with pytest.raises(HpbooksError, match="no such account"):
+        with pytest.raises(HpgbooksError, match="no such account"):
             set_anchor(conn, "not-an-account", 100, "2026-04-02", "statement", "", actor="cli")
 
 
 def test_api_balances(env):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     with connect() as conn:
         _cash_book(conn)

@@ -10,7 +10,7 @@ Reads `statement-*.pdf` (override with --glob) with `pdftotext -layout`, checks
 each statement's rows against its ACCOUNT SUMMARY, and inserts only rows that
 are not in the ledger yet (id = cfna:<reference>:<date>:<cents>), so a weekly
 re-run is safe. A statement that does not reconcile is skipped unless --force.
-The database is HPBOOKS_DB / data/hpbooks.db like every hpbooks command.
+The database is HPBOOKS_DB / data/hpbooks.db like every hpgbooks command.
 Details: docs/importers.md
 """
 
@@ -23,10 +23,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from hpbooks import cfna  # noqa: E402
-from hpbooks.balances import parse_dollars  # noqa: E402
-from hpbooks.config import get_config  # noqa: E402
-from hpbooks.db import HpbooksError, connect  # noqa: E402
+from hpgbooks import cfna  # noqa: E402
+from hpgbooks.balances import parse_dollars  # noqa: E402
+from hpgbooks.config import get_config  # noqa: E402
+from hpgbooks.db import HpgbooksError, connect  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -102,7 +102,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"account {account_id} {'(would be created)' if created and args.dry_run else '(created)' if created else '(exists)'}")
             for note in cfna.ensure_anchors(conn, account_id, good, dry_run=args.dry_run):
                 print(note)
-            from hpbooks import payments
+            from hpgbooks import payments
 
             print(payments.ingest_latest_statement(conn, account_id, good, dry_run=args.dry_run))
             stats = cfna.import_rows(conn, account_id, rows, dry_run=args.dry_run)
@@ -113,16 +113,16 @@ def main(argv: list[str] | None = None) -> int:
             for key in stats.get("unpaired", []):
                 print(f"  un-paired a false transfer match: {key}")
             for key in stats.get("ambiguous", []):
-                print(f"  check by hand (a card payment matches more than one bank debit); then 'hpbooks personal transfers confirm' or 'reject' this key: {key}")
+                print(f"  check by hand (a card payment matches more than one bank debit); then 'hpgbooks personal transfers confirm' or 'reject' this key: {key}")
             if args.balance:
                 print(cfna.set_manual_balance(conn, account_id, parse_dollars(args.balance), args.as_of, "CFNA account summary (manual)", dry_run=args.dry_run))
             if args.reclassify and not args.dry_run:
-                from hpbooks.personal.classify import reclassify_personal
+                from hpgbooks.personal.classify import reclassify_personal
 
                 print(f"reclassified {reclassify_personal(conn)} rows")
             if args.dry_run:
                 conn.rollback()
-    except HpbooksError as exc:
+    except HpgbooksError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     return 1 if failed else 0

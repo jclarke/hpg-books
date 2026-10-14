@@ -9,9 +9,9 @@ from pathlib import Path
 import pytest
 from personal_helpers import add_account, add_txn, cat_id, make_db
 
-from hpbooks import cfna
-from hpbooks.accounts_admin import discover
-from hpbooks.db import connect
+from hpgbooks import cfna
+from hpgbooks.accounts_admin import discover
+from hpgbooks.db import connect
 
 LAST4 = "8642"  # made up
 
@@ -206,7 +206,7 @@ def test_account_import_is_idempotent_classified_and_manual(db):
         # a refund nets against the purchase category and is manual (a reclassify keeps it)
         refund = category("2222222BB00YYBBB2")
         assert refund[2] == "manual" and refund[0] != "Income"
-        from hpbooks.personal.classify import reclassify_personal
+        from hpgbooks.personal.classify import reclassify_personal
 
         reclassify_personal(conn)
         assert tuple(category("2222222BB00YYBBB2"))[:2] == tuple(refund)[:2]
@@ -228,7 +228,7 @@ def test_opening_anchor_and_manual_balance(db):
         assert "already recorded" in msg
         anchors = conn.execute("SELECT as_of_date, balance_cents FROM balance_anchors WHERE account_id = ? ORDER BY as_of_date", (account_id,)).fetchall()
         assert [(a[0], a[1]) for a in anchors] == [("2099-02-05", 105427), ("2099-04-01", 90000)]
-        from hpbooks.balances import snapshot_for
+        from hpgbooks.balances import snapshot_for
 
         assert snapshot_for(conn, account_id)["real_balance_cents"] == 90000  # owed; positive
 
@@ -265,7 +265,7 @@ def test_discover_does_not_duplicate_or_clobber_the_manual_account(db):
         # a different card with another last 4 is still registered
         other = json.dumps([{"id": "other-uuid", "mask": "9999", "name": "Other", "type": "credit", "subtype": "credit card"}])
         assert discover(conn, other, scope="personal")[0]["status"] == "new"
-        from hpbooks.accounts_admin import sync_list
+        from hpgbooks.accounts_admin import sync_list
 
         assert account_id not in {row["id"] for row in sync_list(conn)}
 
@@ -335,7 +335,7 @@ def test_account_id_and_other_cards_are_skipped(tmp_path, monkeypatch):
 
 
 def test_script_needs_a_last4_from_the_flag_or_the_config(db, tmp_path, monkeypatch, capsys):
-    from hpbooks import config as hpconfig
+    from hpgbooks import config as hpconfig
 
     folder = tmp_path / "pdfs"
     folder.mkdir()

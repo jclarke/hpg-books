@@ -102,7 +102,7 @@ export default function WhmcsOverviewPage() {
 
           <Card padded={false} className="table-section">
             <div className="table-section__head">
-              <CardHeader title="Sync log" subtitle="Each run of hpbooks whmcs sync, per brand. Row counts only; no customer data is logged." />
+              <CardHeader title="Sync log" subtitle="Each run of hpgbooks whmcs sync, per brand. Row counts only; no customer data is logged." />
             </div>
             <DataTable caption="WHMCS sync log" columns={logColumns} rows={data?.log ?? []} rowKey={(row) => String(row.id)} loading={status.isPending} dense empty="No sync has run yet." />
           </Card>

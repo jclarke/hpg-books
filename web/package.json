@@ -1,9 +1,9 @@
 {
-  "name": "hpbooks-web",
+  "name": "hpgbooks-web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "React front end for hpbooks",
+  "description": "React front end for HPG Books",
   "engines": {
     "node": ">=20"
   },

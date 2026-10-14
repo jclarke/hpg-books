@@ -11,8 +11,8 @@ import pytest
 from golden_fixture import run_cli
 from personal_helpers import add_account, add_txn, anchor, classify_all, make_db
 
-from hpbooks import applecard, cfna, payments as pay
-from hpbooks.db import MIGRATIONS, HpbooksError, _apply_migrations, connect
+from hpgbooks import applecard, cfna, payments as pay
+from hpgbooks.db import MIGRATIONS, HpgbooksError, _apply_migrations, connect
 
 TODAY = "2026-10-04"
 
@@ -109,11 +109,11 @@ def test_inferred_data_is_replaced_by_the_sheet_and_validation(db):
         pay.merge_terms(conn, "card1", {"min_payment_cents": 12300, "due_date": "2026-10-16", "estimated": 0}, source="sheet", as_of="2026-09-02")
         row = pay.get_terms(conn, "card1")
         assert (row["source"], row["min_payment_cents"], row["estimated"]) == ("sheet", 12300, 0)
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             pay.merge_terms(conn, "card1", {"due_date": "10/16/2026"}, source="sheet")
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             pay.merge_terms(conn, "card1", {"autopay": "maybe"}, source="sheet")
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             pay.set_manual(conn, "bank1", {"min_payment_cents": 1})  # not a card or loan
 
 
@@ -196,7 +196,7 @@ def test_mark_paid_and_a_new_due_date_clears_it(db):
         assert state["rolled"] and state["effective_due_date"] == "2026-11-01"
         terms(conn, due_date="2026-11-02", as_of="2026-10-03")
         assert pay.get_terms(conn, "card1")["paid_on"] is None
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             pay.mark_paid(conn, "loan1", "2026-10-02")
 
 
@@ -214,7 +214,7 @@ def test_loan_paid_from_a_bank_account_is_found_by_pattern(db):
         add_txn(conn, "b2", "bank1", "2026-09-14", -777, "OTHER STORE")
         state = pay.evaluate(conn, "loan1", pay.get_terms(conn, "loan1"), TODAY)
         assert (state["status"], state["effective_due_date"]) == ("upcoming", "2026-10-15")
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             pay.merge_terms(conn, "loan1", {"payer_pattern": "(unclosed"}, source="manual")
 
 
@@ -250,7 +250,7 @@ def test_infer_schedule_reads_the_servicers_applied_to_label():
 
 
 def _payer_hints(*pairs):
-    from hpbooks import config as hpconfig
+    from hpgbooks import config as hpconfig
 
     hpconfig.override(payer_hints=tuple(hpconfig.PayerHint(match=m, pattern=p) for m, p in pairs))
 
@@ -271,7 +271,7 @@ def test_infer_loans_from_bank_debits_and_never_overwrites_better_data(db):
 
 
 def test_payer_hints_come_from_the_config(db):
-    from hpbooks import config as hpconfig
+    from hpgbooks import config as hpconfig
 
     assert hpconfig.build({}).payer_hints == ()
     cfg = hpconfig.build({"payments": {"payer_hints": [{"match": "5555", "pattern": "SAMPLE LENDER"}]}})
@@ -364,7 +364,7 @@ def test_build_lists_cards_and_loans_by_mode_with_summary(db):
         assert s["by_date"] == [{"date": "2026-10-10", "cents": 2500, "count": 1}]
         business = pay.build(conn, "business", TODAY)
         assert "biz1" in [r["id"] for r in business["rows"]] and "card1" not in [r["id"] for r in business["rows"]] and business["summary"]["next30_cents"] == 1500
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             pay.build(conn, "excluded", TODAY)
 
 
@@ -406,7 +406,7 @@ def test_cli_infer_payments_dry_run_writes_nothing(db):
 
 @pytest.fixture()
 def client(db):
-    from hpbooks.web import create_app
+    from hpgbooks.web import create_app
 
     return create_app().test_client()
 

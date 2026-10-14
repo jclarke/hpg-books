@@ -9,9 +9,9 @@ from pathlib import Path
 import pytest
 from personal_helpers import add_account, add_txn, make_db
 
-from hpbooks import manual_accounts
-from hpbooks.accounts_admin import discover
-from hpbooks.db import HpbooksError, connect
+from hpgbooks import manual_accounts
+from hpgbooks.accounts_admin import discover
+from hpgbooks.db import HpgbooksError, connect
 
 
 @pytest.fixture()
@@ -52,20 +52,20 @@ def test_refresh_is_idempotent_and_appends_new_dates(db):
 def test_refuses_unknown_synced_and_ambiguous_accounts(db):
     with connect() as conn:
         add_account(conn, "synced1", "cash", last4="9999", name="Fake Synced")
-        with pytest.raises(HpbooksError, match="no manual account"):
+        with pytest.raises(HpgbooksError, match="no manual account"):
             manual_accounts.set_balance(conn, "Fake Synced", "1.00", "2099-01-02")  # never anchors a synced account
-        with pytest.raises(HpbooksError, match="already exists"):
+        with pytest.raises(HpgbooksError, match="already exists"):
             manual_accounts.create_account(conn, "Fake Synced", "cash", last4="9999")
         manual_accounts.set_balance(conn, "Fake Roth A", "1", "2099-01-02", create_class="investment")
         manual_accounts.set_balance(conn, "Fake Roth B", "2", "2099-01-02", create_class="investment")
-        with pytest.raises(HpbooksError, match="more than one"):
+        with pytest.raises(HpgbooksError, match="more than one"):
             manual_accounts.set_balance(conn, "Roth", "3", "2099-01-02")
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             manual_accounts.set_balance(conn, "Fake Roth A", "abc", "2099-01-02")
 
 
 def test_net_worth_signs_and_no_effect_on_spending(db):
-    from hpbooks.personal.analytics import cash_flow, net_worth, spending
+    from hpgbooks.personal.analytics import cash_flow, net_worth, spending
 
     with connect() as conn:
         add_account(conn, "bank1", "cash", last4="1111", name="Fake Checking")

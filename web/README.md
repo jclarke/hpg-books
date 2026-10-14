@@ -1,6 +1,6 @@
-# hpbooks: web front end
+# HPG Books: web front end
 
-This is the single-page React app for hpbooks. Flask serves the built files from `hpbooks/static/app/` and answers JSON under `/api/*`. The build output is committed, so `bin/hpbooks web` runs without Node.
+This is the single-page React app for HPG Books. Flask serves the built files from `hpgbooks/static/app/` and answers JSON under `/api/*`. The build output is committed, so `bin/hpgbooks web` runs without Node.
 
 ## Stack
 
@@ -36,13 +36,13 @@ The shell loads `GET /api/session` first. When `requires_login` is true and `aut
 ```bash
 cd web
 npm ci              # install exact versions from package-lock.json
-npm run dev         # Vite on http://127.0.0.1:5173, proxying /api and /export to bin/hpbooks web on :8765
+npm run dev         # Vite on http://127.0.0.1:5173, proxying /api and /export to bin/hpgbooks web on :8765
 npm test            # Vitest (jsdom)
 npm run typecheck   # tsc
 npm run build       # tsc + vite build -> web/dist
 ```
 
-From the repo root, `bin/build-ui` runs `npm ci`, `npm run build`, and copies `web/dist` to `hpbooks/static/app`. Use `bin/build-ui --no-install` to skip `npm ci`. Commit `hpbooks/static/app` after building.
+From the repo root, `bin/build-ui` runs `npm ci`, `npm run build`, and copies `web/dist` to `hpgbooks/static/app`. Use `bin/build-ui --no-install` to skip `npm ci`. Commit `hpgbooks/static/app` after building.
 
 ## Conventions
 

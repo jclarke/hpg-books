@@ -45,7 +45,7 @@ function pct(part: number, whole: number): number | null {
   return Math.round((part * 1000) / whole) / 10;
 }
 
-/** The same arithmetic as hpbooks.margins.whatif on the server. */
+/** The same arithmetic as hpgbooks.margins.whatif on the server. */
 export function whatIf(report: Margins, scenario: Scenario): WhatIfResult {
   const servers = new Map<number, { label: string; cost: number; revenue: number }>();
   for (const row of report.servers) {

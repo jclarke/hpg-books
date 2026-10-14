@@ -26,7 +26,7 @@ def main() -> int:
         print(f"refusing: {db} already exists; remove it first", file=sys.stderr)
         return 2
     os.environ.setdefault("HPBOOKS_CONFIG", str(Path(__file__).parent / "fixtures" / "config.test.toml"))
-    os.environ["HPBOOKS_SEED_CSV"] = str(Path(db).parent / "no-seed.csv")
+    os.environ["HPGBOOKS_SEED_CSV"] = str(Path(db).parent / "no-seed.csv")
     from golden_fixture import build_business_ledger, run_cli
     from personal_fake import write_inbox
 

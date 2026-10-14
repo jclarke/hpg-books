@@ -1,6 +1,6 @@
 # Personal mode
 
-hpbooks keeps two sets of books in one encrypted database. **Business** mode is the business ledger and P&L. **Personal** mode covers personal bank, card, loan, and investment accounts and covers what a personal finance app does: net worth, spending, cash flow, budgets, recurring charges and subscriptions, bills, goals, a review queue, and a monthly summary.
+HPG Books keeps two sets of books in one encrypted database. **Business** mode is the business ledger and P&L. **Personal** mode covers personal bank, card, loan, and investment accounts and covers what a personal finance app does: net worth, spending, cash flow, budgets, recurring charges and subscriptions, bills, goals, a review queue, and a monthly summary.
 
 The header has a **Business | Personal** toggle. It is not the business switcher (All plus each configured business), which picks a business inside Business mode and is shown only there.
 
@@ -19,13 +19,13 @@ Transactions carry no scope of their own. A row's scope is its account's scope, 
 Each account also has a `class` (cash, credit card, investment, loan or mortgage, other), an include-in-net-worth flag, a daily-sync flag, and an optional display name. `type` keeps its old meaning (cash = asset balance, liability = amount owed); a loan is `type` liability, an investment `type` cash.
 
 ```bash
-bin/hpbooks accounts                                  # business accounts, same output as before
-bin/hpbooks accounts list [--scope personal] [--json]
-bin/hpbooks accounts set-scope <id|last4|name> <business|personal|excluded>
-bin/hpbooks accounts set-class <account> <cash|liability|investment|loan|other>
-bin/hpbooks accounts rename <account> "Household checking"
-bin/hpbooks accounts discover saved_finance_list_accounts.json [--scope personal] [--dry-run] [--as-of YYYY-MM-DD]
-bin/hpbooks accounts sync-list [--scope personal] [--json]
+bin/hpgbooks accounts                                  # business accounts, same output as before
+bin/hpgbooks accounts list [--scope personal] [--json]
+bin/hpgbooks accounts set-scope <id|last4|name> <business|personal|excluded>
+bin/hpgbooks accounts set-class <account> <cash|liability|investment|loan|other>
+bin/hpgbooks accounts rename <account> "Household checking"
+bin/hpgbooks accounts discover saved_finance_list_accounts.json [--scope personal] [--dry-run] [--as-of YYYY-MM-DD]
+bin/hpgbooks accounts sync-list [--scope personal] [--json]
 ```
 
 `accounts discover` reads a saved `finance_list_accounts` result (the tool-result wrapper with CSV text, a plain JSON list, or `{"accounts": [...]}`), accepting `id`, `name`/`official_name`, `mask`/`last4`, `institution`, `class`/`type`/`subtype`, and `current_balance`. Unknown accounts are registered as personal (or `--scope`). An existing account keeps its scope; its name, last 4, and class are filled in only if blank. `current_balance` becomes a `finance` balance anchor dated `--as-of` (default today), skipped if the latest anchor already has that date and amount, so running it twice changes nothing. Only the last 4 digits of a number are kept or printed; a long digit run inside a provider name is cut to its last 4.
@@ -34,9 +34,9 @@ An account that is not registered is never created by `import`; its rows are ski
 
 ## Navigation
 
-Personal sidebar: Dashboard, Net worth, Accounts, Transactions, Spending, Cash flow, Budgets, Recurring, Bills, Goals, Monthly summary, Review, Categories & rules, Settings. URLs are under `/personal/...`; the API under `/api/personal/...`; CSV exports under `/export/personal/<table>.csv`; the CLI under `hpbooks personal ...`.
+Personal sidebar: Dashboard, Net worth, Accounts, Transactions, Spending, Cash flow, Budgets, Recurring, Bills, Goals, Monthly summary, Review, Categories & rules, Settings. URLs are under `/personal/...`; the API under `/api/personal/...`; CSV exports under `/export/personal/<table>.csv`; the CLI under `hpgbooks personal ...`.
 
-The mode comes from the path. On load `?mode=business|personal` wins; with no `?mode=` on the root page the last mode (localStorage `hpbooks.mode`) is used; the default is business. Switching keeps the date range and goes to the matching page (Transactions, Accounts, Review, Settings, Calendar → Bills, Rules → Categories) or that mode's dashboard. Personal pages carry a violet accent and a "Personal" label. Every API request sends `mode=`; a business route asked for `mode=personal`, or a personal route for `mode=business`, answers 404, and a transaction id from the other scope is 404 on detail and edit routes. The command palette searches only the active mode.
+The mode comes from the path. On load `?mode=business|personal` wins; with no `?mode=` on the root page the last mode (localStorage `hpgbooks.mode`) is used; the default is business. Switching keeps the date range and goes to the matching page (Transactions, Accounts, Review, Settings, Calendar → Bills, Rules → Categories) or that mode's dashboard. Personal pages carry a violet accent and a "Personal" label. Every API request sends `mode=`; a business route asked for `mode=personal`, or a personal route for `mode=business`, answers 404, and a transaction id from the other scope is 404 on detail and edit routes. The command palette searches only the active mode.
 
 ## Sign conventions
 
@@ -48,11 +48,11 @@ The mode comes from the path. On load `?mode=business|personal` wins; with no `?
 
 ## Classification
 
-Personal rows use their own engine (`hpbooks/personal/classify.py`) and tables (`p_categories`, `p_rules`, `p_classifications`, `p_splits`, `p_merchants`, `p_tags`, `p_txn_tags`); business rules never run on them and personal rules never run on business rows. Order: manual > transfer pair > first matching personal rule (priority, then id) > the merchant's default category > Uncategorized. A manual category is never replaced by rules, transfer detection, re-import, or reclassify. A pending row that posts under a new id keeps its manual category and tags.
+Personal rows use their own engine (`hpgbooks/personal/classify.py`) and tables (`p_categories`, `p_rules`, `p_classifications`, `p_splits`, `p_merchants`, `p_tags`, `p_txn_tags`); business rules never run on them and personal rules never run on business rows. Order: manual > transfer pair > first matching personal rule (priority, then id) > the merchant's default category > Uncategorized. A manual category is never replaced by rules, transfer detection, re-import, or reclassify. A pending row that posts under a new id keeps its manual category and tags.
 
 The review queue holds rows that are Uncategorized or below 0.6 confidence (manual and transfer rows never). Suggestions come from how the same merchant was categorized before.
 
-Starter categories and rules are seeded by `bin/hpbooks init` and `bin/hpbooks personal seed-rules` (idempotent). Rules name only well-known public merchants (streaming services, grocery chains, fuel brands, utilities, …) and generic bank wording (PAYROLL / DIRECT DEP, CARD PAYMENT, MORTGAGE). Venmo, Zelle, and Cash App are placeholders that land in review.
+Starter categories and rules are seeded by `bin/hpgbooks init` and `bin/hpgbooks personal seed-rules` (idempotent). Rules name only well-known public merchants (streaming services, grocery chains, fuel brands, utilities, …) and generic bank wording (PAYROLL / DIRECT DEP, CARD PAYMENT, MORTGAGE). Venmo, Zelle, and Cash App are placeholders that land in review.
 
 Splits must add up exactly to the row amount (two or more parts). Merchant names are cleaned into a key (processor prefixes like `SQ *`, marketplace codes like `AMZN Mktp US*2K4…`, store numbers, ACH `DES:` descriptors, phone numbers, and a trailing city/state are removed); a rename is stored once per key in `p_merchants` and applies to every matching row.
 
@@ -60,7 +60,7 @@ Splits must add up exactly to the row amount (two or more parts). Merchant names
 
 Two personal rows pair when they are in different personal accounts, have opposite signs and the same size, are within 3 days, and at least one looks like a transfer (a transfer-category rule matched it, or its text says transfer/payment/deposit/contribution). Both legs become a Transfers category (Credit card payment, Savings transfer, Loan payment, Internal transfer) and count as neither spending nor income, while still moving balances. A card payment from checking is a transfer; the card's purchases are the spending.
 
-A leg with more than one candidate is **ambiguous**: it is listed (`hpbooks personal transfers`, and the Transfers section of the API) and not applied until confirmed (`hpbooks personal transfers confirm <out_id|in_id>`) or rejected. Detection is deterministic: the same ledger gives the same pairs.
+A leg with more than one candidate is **ambiguous**: it is listed (`hpgbooks personal transfers`, and the Transfers section of the API) and not applied until confirmed (`hpgbooks personal transfers confirm <out_id|in_id>`) or rejected. Detection is deterministic: the same ledger gives the same pairs.
 
 Loans: a payment to a mortgage or auto loan is spending on the paying side (Housing / Mortgage, Transportation / Auto payment); only the loan account's credit is a transfer. Nothing is counted twice.
 
@@ -77,11 +77,11 @@ On the personal side:
 
 Pairing runs again after every import, so a business draw that arrives after its personal deposit (or the reverse) still pairs. These rows have ids `biz:<business id>` and `biz:<business id>:spend`.
 
-`hpbooks personal reconcile --month YYYY-MM` (and `/api/personal/reconcile`) ties earned income + owner draws received − spending + transfers net to the change in personal balances. Every personal row lands in exactly one bucket; the listed differences are pending rows, loan credits (spent on the paying side), unmatched transfer legs, and anchor adjustments. Business-paid funding and spending are shown as a memo and are not part of personal balances.
+`hpgbooks personal reconcile --month YYYY-MM` (and `/api/personal/reconcile`) ties earned income + owner draws received − spending + transfers net to the change in personal balances. Every personal row lands in exactly one bucket; the listed differences are pending rows, loan credits (spent on the paying side), unmatched transfer legs, and anchor adjustments. Business-paid funding and spending are shown as a memo and are not part of personal balances.
 
 ## Recurring charges and subscriptions
 
-`hpbooks/personal/recurring.py` is a pure function, run on every API request and by `hpbooks personal recurring detect` (which also stores the series in `p_recurring`).
+`hpgbooks/personal/recurring.py` is a pure function, run on every API request and by `hpgbooks personal recurring detect` (which also stores the series in `p_recurring`).
 
 - Rows are grouped by merchant key and direction; transfers and funding are skipped. Within a merchant, amounts are clustered (a new cluster starts more than 35% above the last amount), so a price change stays one series and two plans split.
 - Cadence is the median gap: weekly 5–9 days, biweekly 12–16, monthly 25–36, quarterly 80–100, annual 340–390, with two thirds of the gaps inside the band (±2 days). Weekly, biweekly, and monthly need 3 occurrences; quarterly and annual need 2.
@@ -95,11 +95,11 @@ Pairing runs again after every import, so a business draw that arrives after its
 
 ## Budgets
 
-Monthly budgets per category or per group. A budget without a month is the default for every month; a month row overrides it. Progress is spending (refunds netted) against the available amount; warning at 80%, over above 100%. Pace = spending so far ÷ days elapsed × days in the month. **Rollover** carries each earlier month's unspent (or overspent) amount, up to 12 months back, starting with the first of those months that has spending in that line. "Copy last month" gives a month its own copy of every budget in effect the month before; "3-month average" suggests the average of the three full months before, rounded up to whole dollars. `hpbooks personal budgets --alerts` prints lines at 80% or more. Budgets run on calendar months.
+Monthly budgets per category or per group. A budget without a month is the default for every month; a month row overrides it. Progress is spending (refunds netted) against the available amount; warning at 80%, over above 100%. Pace = spending so far ÷ days elapsed × days in the month. **Rollover** carries each earlier month's unspent (or overspent) amount, up to 12 months back, starting with the first of those months that has spending in that line. "Copy last month" gives a month its own copy of every budget in effect the month before; "3-month average" suggests the average of the three full months before, rounded up to whole dollars. `hpgbooks personal budgets --alerts` prints lines at 80% or more. Budgets run on calendar months.
 
 ## Net worth and balance history
 
-Balances come from balance anchors (Finance `current_balance` via `balances set` or `accounts discover`, or a statement) plus ledger activity, the same idea as `hpbooks/balances.py`, extended to any date:
+Balances come from balance anchors (Finance `current_balance` via `balances set` or `accounts discover`, or a statement) plus ledger activity, the same idea as `hpgbooks/balances.py`, extended to any date:
 
 - With an anchor on or before the date: that anchor plus every active row after it through the date (pending included, since a posted anchor does not contain them).
 - Before the first anchor: the first anchor walked back by the posted rows in between.
@@ -113,7 +113,7 @@ A goal has a target, an optional date, and either a linked personal account (pro
 
 ## Monthly summary
 
-`/personal/review-month` and `hpbooks personal summary --month YYYY-MM [--format table|csv|json]`: income, spending, savings rate against the prior month and the 12-month average, the five largest category changes, the biggest transactions, new and re-priced subscriptions, budget results, net worth change, and a short plain-English list built from templates (no AI calls). The page prints cleanly.
+`/personal/review-month` and `hpgbooks personal summary --month YYYY-MM [--format table|csv|json]`: income, spending, savings rate against the prior month and the 12-month average, the five largest category changes, the biggest transactions, new and re-priced subscriptions, budget results, net worth change, and a short plain-English list built from templates (no AI calls). The page prints cleanly.
 
 ## Data and security
 
@@ -130,4 +130,4 @@ All personal data lives in the same SQLCipher database (tables prefixed `p_`), b
 - **Investment history** between anchors is anchors plus contributions (no market prices).
 - **Recurring "unused"** cannot be known from charges; only "may be cancelled", "possible duplicate", and "new" are flagged.
 - **Budget month** is the calendar month; a custom start day is not implemented.
-- **Personal history before the business opening date** (2026-01-01, `hpbooks/balances.py`) imports and reports normally. That date applies only to business balances.
+- **Personal history before the business opening date** (2026-01-01, `hpgbooks/balances.py`) imports and reports normally. That date applies only to business balances.

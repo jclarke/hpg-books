@@ -84,7 +84,7 @@ export function WhmcsToolbar({ children, brand, period = true }: { children?: Re
 export function NotSynced() {
   return (
     <EmptyState icon="server" title="WHMCS has not been synced yet">
-      Run <code>bin/hpbooks whmcs sync</code> on the books machine. It opens the SSH tunnels, copies the billing data into the encrypted database, and closes them.
+      Run <code>bin/hpgbooks whmcs sync</code> on the books machine. It opens the SSH tunnels, copies the billing data into the encrypted database, and closes them.
     </EmptyState>
   );
 }

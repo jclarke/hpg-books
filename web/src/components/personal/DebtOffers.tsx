@@ -148,7 +148,7 @@ export function OffersCard({
             {!loading && !error && offers.length === 0 ? (
               <tr>
                 <td colSpan={9} className="debt-sub">
-                  No saved offers yet. Add one, save the custom what-if, or run <code>hpbooks personal offers add</code>.
+                  No saved offers yet. Add one, save the custom what-if, or run <code>hpgbooks personal offers add</code>.
                 </td>
               </tr>
             ) : null}

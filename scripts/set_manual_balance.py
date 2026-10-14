@@ -25,8 +25,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from hpbooks import manual_accounts  # noqa: E402
-from hpbooks.db import HpbooksError, connect  # noqa: E402
+from hpgbooks import manual_accounts  # noqa: E402
+from hpgbooks.db import HpgbooksError, connect  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -49,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
 def load_batch(path: str) -> list[dict]:
     data = json.loads(Path(path).expanduser().read_text(encoding="utf-8"))
     if not isinstance(data, list) or not all(isinstance(item, dict) and "name" in item and "balance" in item for item in data):
-        raise HpbooksError("batch file must be a JSON list of objects with name and balance")
+        raise HpgbooksError("batch file must be a JSON list of objects with name and balance")
     return data
 
 
@@ -62,9 +62,9 @@ def main(argv: list[str] | None = None) -> int:
             items = [{"name": args.name, "balance": args.balance, "class": args.account_class if args.create else None,
                       "last4": args.last4, "institution": args.institution, "subtype": args.subtype}]
             if args.create and not args.account_class:
-                raise HpbooksError("--create needs --class")
+                raise HpgbooksError("--create needs --class")
         else:
-            raise HpbooksError("give NAME BALANCE, or --batch FILE")
+            raise HpgbooksError("give NAME BALANCE, or --batch FILE")
         with connect() as conn:
             for item in items:
                 print(
@@ -83,7 +83,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
             if args.dry_run:
                 conn.rollback()
-    except (HpbooksError, OSError, ValueError) as exc:
+    except (HpgbooksError, OSError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     return 0

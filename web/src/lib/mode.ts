@@ -1,11 +1,13 @@
 /**
  * Business / Personal mode. The path decides the mode (/personal/... is
  * personal), ?mode= in the URL wins on load, and the last mode is remembered
- * in localStorage under hpbooks.mode. Only the mode flag is stored there.
+ * in localStorage under hpgbooks.mode. Only the mode flag is stored there.
  */
 
 export type Mode = "business" | "personal";
-export const MODE_KEY = "hpbooks.mode";
+export const MODE_KEY = "hpgbooks.mode";
+/** compat: the key before the rename; read when MODE_KEY is unset. */
+export const LEGACY_MODE_KEY = "hpbooks.mode";
 export const PERSONAL_ROOT = "/personal";
 
 export function isMode(value: unknown): value is Mode {
@@ -32,7 +34,7 @@ export function modeFromPath(pathname: string): Mode {
 
 export function readStoredMode(): Mode | null {
   try {
-    const value = window.localStorage.getItem(MODE_KEY);
+    const value = window.localStorage.getItem(MODE_KEY) ?? window.localStorage.getItem(LEGACY_MODE_KEY);
     return isMode(value) ? value : null;
   } catch {
     return null;

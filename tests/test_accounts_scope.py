@@ -6,10 +6,10 @@ import json
 
 import pytest
 
-import hpbooks.db as hpdb
-from hpbooks.db import ACCOUNTS, HpbooksError, _apply_migrations, connect, init_db, seed_accounts
+import hpgbooks.db as hpdb
+from hpgbooks.db import ACCOUNTS, HpgbooksError, _apply_migrations, connect, init_db, seed_accounts
 from fake_accounts import BANK, REWARDS, PAYPAL
-from hpbooks.scope import account_ids, parse_mode, resolve_account, scope_clause, txn_scope
+from hpgbooks.scope import account_ids, parse_mode, resolve_account, scope_clause, txn_scope
 from golden_fixture import run_cli
 from personal_fake import CARD_A, CHECKING, MORTGAGE, accounts_payload
 
@@ -21,7 +21,7 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setenv("HPBOOKS_KEY", KEY)
     monkeypatch.setenv("HPBOOKS_DB", str(tmp_path / "books.db"))
     monkeypatch.delenv("HPBOOKS_KEY_FILE", raising=False)
-    monkeypatch.setenv("HPBOOKS_SEED_CSV", str(tmp_path / "no-seed.csv"))
+    monkeypatch.setenv("HPGBOOKS_SEED_CSV", str(tmp_path / "no-seed.csv"))
     return tmp_path
 
 
@@ -91,7 +91,7 @@ def test_seed_accounts_never_resets_scope_or_user_fields(env):
 def test_scope_helper(env):
     init_db()
     assert parse_mode(None) == "business" and parse_mode("") == "business" and parse_mode("personal") == "personal"
-    with pytest.raises(HpbooksError):
+    with pytest.raises(HpgbooksError):
         parse_mode("all")
     with connect() as conn:
         sql, params = scope_clause(conn, "personal")
@@ -193,7 +193,7 @@ def test_resolve_account_by_id_last4_and_name(env):
         assert resolve_account(conn, "0101")["id"] == BANK
         assert resolve_account(conn, BANK)["id"] == BANK
         assert resolve_account(conn, "paypal")["id"] == PAYPAL
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             resolve_account(conn, "nothing-like-this")
 
 

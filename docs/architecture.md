@@ -1,6 +1,6 @@
 # Architecture
 
-hpbooks is a single-user ledger that runs on one machine. A Python package owns the data and every calculation; a React app in the browser only displays and edits through a JSON API.
+HPG Books is a single-user ledger that runs on one machine. A Python package owns the data and every calculation; a React app in the browser only displays and edits through a JSON API.
 
 ```
 aggregator pulls / CSVs / PDFs ──> importers ──> SQLCipher database (data/hpbooks.db)
@@ -8,19 +8,19 @@ aggregator pulls / CSVs / PDFs ──> importers ──> SQLCipher database (dat
                          classify (rules, transfers, manual decisions)
                                                    │
              ┌─────────────────────────────────────┼──────────────────────────┐
-         CLI (bin/hpbooks)              Flask on 127.0.0.1:8765        exports (CSV/XLSX/PDF)
+         CLI (bin/hpgbooks)              Flask on 127.0.0.1:8765        exports (CSV/XLSX/PDF)
                                          ├─ /api/*  JSON
-                                         └─ /       React app (hpbooks/static/app)
+                                         └─ /       React app (hpgbooks/static/app)
 ```
 
 ## Storage
 
-- One SQLCipher database, keyed with a 256-bit raw key (64 hex characters) from `HPBOOKS_KEY` or a mode-600 key file (`~/.config/hpbooks/key` by default). `hpbooks/db.py` creates the schema, runs numbered migrations on every writing connection, and keeps `data/` at mode 700 and the file at mode 600.
+- One SQLCipher database, keyed with a 256-bit raw key (64 hex characters) from `HPBOOKS_KEY` or a mode-600 key file (`~/.config/hpbooks/key` by default). `hpgbooks/db.py` creates the schema, runs numbered migrations on every writing connection, and keeps `data/` at mode 700 and the file at mode 600.
 - Money is stored and computed as integer cents. Dollars appear only at the edges (CLI arguments and output, the browser's formatter).
 - Ledger rows (`transactions`) are kept as imported. Decisions about them live in separate tables: `classifications` (business), `p_classifications` and friends (personal), `vendor_aliases`, `balance_anchors`. Re-importing never loses a manual decision.
 - Every write made from the web UI or a CLI editing command adds an `audit_log` row with the old and new values.
 
-## Modules (`hpbooks/`)
+## Modules (`hpgbooks/`)
 
 | Module | Role |
 |---|---|
@@ -37,7 +37,7 @@ aggregator pulls / CSVs / PDFs ──> importers ──> SQLCipher database (dat
 | `capitalone.py`, `applecard.py`, `cfna.py`, `monarch.py` | File importers (see [importers.md](importers.md)) |
 | `whmcs*.py`, `margins*.py` | Optional WHMCS billing copy, reports, and server margins (see [whmcs.md](whmcs.md)) |
 | `web.py`, `api.py`, `webargs.py`, `access.py` | Flask app, JSON API, CSRF and request checks, host allowlist and sign-in |
-| `cli.py` | The `hpbooks` command line |
+| `cli.py` | The `hpgbooks` command line |
 
 ## Business and personal modes
 
@@ -45,11 +45,11 @@ Every account has a scope. Business queries read only `business` accounts and pe
 
 ## Classification (business)
 
-For each non-manual row: the first matching rule (lowest priority number, then id), else the optional prior-analysis CSV, else `needs_review`. A manual classification is never replaced by an import or `reclassify`. `owner_draw` rows are always category Owner Draw and `transfer` rows always Transfer; both stay off the income statement (owner draws are shown below the line). `bin/hpbooks reconcile` checks that raw activity minus transfers and owner draws equals P&L net income, per year and per business.
+For each non-manual row: the first matching rule (lowest priority number, then id), else the optional prior-analysis CSV, else `needs_review`. A manual classification is never replaced by an import or `reclassify`. `owner_draw` rows are always category Owner Draw and `transfer` rows always Transfer; both stay off the income statement (owner draws are shown below the line). `bin/hpgbooks reconcile` checks that raw activity minus transfers and owner draws equals P&L net income, per year and per business.
 
 ## Web app
 
-`web/` is a React 18 + TypeScript app built with Vite. `bin/build-ui` builds it into `hpbooks/static/app`, which is committed so the server runs without Node. The app reads install-specific data (product name, businesses, features) from `GET /api/config`. It loads nothing from third parties. See [web/README.md](../web/README.md).
+`web/` is a React 18 + TypeScript app built with Vite. `bin/build-ui` builds it into `hpgbooks/static/app`, which is committed so the server runs without Node. The app reads install-specific data (product name, businesses, features) from `GET /api/config`. It loads nothing from third parties. See [web/README.md](../web/README.md).
 
 ## Tests
 

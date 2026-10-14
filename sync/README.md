@@ -1,6 +1,6 @@
 # Daily Finance MCP sync
 
-hpbooks does not call Finance MCP itself. An agent (or you) pulls transactions and drops the raw responses in `sync/inbox/`. `bin/hpbooks import` then loads them. Those files are gitignored.
+HPG Books does not call Finance MCP itself. An agent (or you) pulls transactions and drops the raw responses in `sync/inbox/`. `bin/hpgbooks import` then loads them. Those files are gitignored.
 
 For the first load, pull the history you want (for example from January 1 of the current year) into a dated folder such as `sync/inbox/seed/` in date windows, and import it the same way. Daily runs after that pull a short overlapping window and import it.
 
@@ -9,8 +9,8 @@ For the first load, pull the history you want (for example from January 1 of the
 The account list comes from the database. Print it, with the tool and inbox file prefix for each account, before every run:
 
 ```bash
-bin/hpbooks accounts sync-list            # business and personal, sync-enabled, not excluded or closed
-bin/hpbooks accounts sync-list --json     # same, for an agent
+bin/hpgbooks accounts sync-list            # business and personal, sync-enabled, not excluded or closed
+bin/hpgbooks accounts sync-list --json     # same, for an agent
 ```
 
 Pull **per scope**: business accounts exactly as below (same commands and file names), personal accounts into `sync/inbox/YYYY-MM-DD/personal/<last4-or-label>_<page>.json` (the `file_prefix` column already includes `personal/`). Excluded accounts and accounts with daily sync turned off are not listed; do not pull them.
@@ -60,13 +60,13 @@ Use `limit` 500.
 
 ## Daily run checklist
 
-1. Run `bin/hpbooks accounts sync-list --json`. For each account it lists (business and personal), call its `tool` with `date_from` = today minus 10 days, `date_to` = today, and `limit` 500.
+1. Run `bin/hpgbooks accounts sync-list --json`. For each account it lists (business and personal), call its `tool` with `date_from` = today minus 10 days, `date_to` = today, and `limit` 500.
 2. Save page 1 verbatim as `sync/inbox/YYYY-MM-DD/<file_prefix>_1.json` (business files at the top of the day folder, personal ones under `personal/`).
 3. While `next_cursor` is set, call again with only `{"cursor": "<next_cursor>", "limit": 500}` and save the next page.
 4. Import the directory. It reads the business files and the `personal/` subfolder; each account's scope decides how its rows are classified, and the output shows rows per scope:
 
    ```bash
-   bin/hpbooks import sync/inbox/YYYY-MM-DD/
+   bin/hpgbooks import sync/inbox/YYYY-MM-DD/
    ```
 
    An account id the database does not know is skipped and named in the output. Register it with `accounts discover` (below), then import again.
@@ -74,61 +74,61 @@ Use `limit` 500.
 5. Refresh the WHMCS billing copy. This always runs after the Finance import, so the PayPal reconciliation uses the same day's ledger (see [Daily WHMCS sync](#daily-whmcs-sync)):
 
    ```bash
-   bin/hpbooks whmcs sync
+   bin/hpgbooks whmcs sync
    ```
 
 6. Refresh posted balances from Finance. Call `finance_list_accounts` with `class` `cash`, then `liability` (and `investment` if personal investment accounts are synced). Save the results as `sync/inbox/YYYY-MM-DD/accounts/finance_list_accounts.json` (in the `accounts/` subfolder, which `import` does not read; a JSON list of the tool results is fine). For every sync-enabled account of both scopes, record that row's `current_balance` (do not use `available_balance`). On a card or loan, `current_balance` is the amount owed and is entered as a positive number. The as-of date is today, because `current_balance` is the posted balance:
 
    ```bash
-   bin/hpbooks balances set <last4-or-label> --balance <current_balance> --as-of YYYY-MM-DD --source finance
+   bin/hpgbooks balances set <last4-or-label> --balance <current_balance> --as-of YYYY-MM-DD --source finance
    ```
 
    Run it once per account, business and personal; `balances set` accepts any registered account. Skip excluded accounts. Each `balances set` appends an anchor and an audit row; it does not edit transactions.
 
-   Instead of one `balances set` per personal account you can run `bin/hpbooks accounts discover sync/inbox/YYYY-MM-DD/accounts/finance_list_accounts.json --as-of YYYY-MM-DD`. It records a finance anchor for every non-excluded account in the file (skipping one already recorded with the same date and amount), registers any new account as personal, and never changes an existing account's scope.
+   Instead of one `balances set` per personal account you can run `bin/hpgbooks accounts discover sync/inbox/YYYY-MM-DD/accounts/finance_list_accounts.json --as-of YYYY-MM-DD`. It records a finance anchor for every non-excluded account in the file (skipping one already recorded with the same date and amount), registers any new account as personal, and never changes an existing account's scope.
 
 7. Look at what still needs a human:
 
    ```bash
-   bin/hpbooks review --year YYYY
-   bin/hpbooks transfers
-   bin/hpbooks reconcile --year YYYY
-   bin/hpbooks pnl --year YYYY --by month
-   bin/hpbooks personal review
-   bin/hpbooks personal transfers          # ambiguous personal transfer pairs to confirm
-   bin/hpbooks personal budgets --alerts
+   bin/hpgbooks review --year YYYY
+   bin/hpgbooks transfers
+   bin/hpgbooks reconcile --year YYYY
+   bin/hpgbooks pnl --year YYYY --by month
+   bin/hpgbooks personal review
+   bin/hpgbooks personal transfers          # ambiguous personal transfer pairs to confirm
+   bin/hpgbooks personal budgets --alerts
    ```
 
 ## New personal accounts
 
-1. Save the `finance_list_accounts` result (all classes) and preview: `bin/hpbooks accounts discover <file> --dry-run`. The table shows last 4 only.
-2. Register: `bin/hpbooks accounts discover <file>`. New accounts become `personal` (use `--scope` for something else); fix any with `bin/hpbooks accounts set-scope <last4> business|excluded`.
-3. `bin/hpbooks accounts sync-list --scope personal` now includes them.
+1. Save the `finance_list_accounts` result (all classes) and preview: `bin/hpgbooks accounts discover <file> --dry-run`. The table shows last 4 only.
+2. Register: `bin/hpgbooks accounts discover <file>`. New accounts become `personal` (use `--scope` for something else); fix any with `bin/hpgbooks accounts set-scope <last4> business|excluded`.
+3. `bin/hpgbooks accounts sync-list --scope personal` now includes them.
 
 ### History backfill for a newly discovered personal account
 
-Pull from the start of the period you keep books for, or the earliest date Finance has, in date windows (for example one calendar month per request, `limit` 500, paging with `{"cursor": ..., "limit": 500}` only) so no window hits the page limit unnoticed. Add a `_query` object (`account_ids`, `date_from`, `date_to`) to each saved page so empty windows still close out pending rows. Save the pages under `sync/inbox/backfill-<last4>/personal/<last4>_<n>.json` and run `bin/hpbooks import sync/inbox/backfill-<last4>/`, then `bin/hpbooks personal reclassify`. The import is idempotent, so overlapping windows are fine.
+Pull from the start of the period you keep books for, or the earliest date Finance has, in date windows (for example one calendar month per request, `limit` 500, paging with `{"cursor": ..., "limit": 500}` only) so no window hits the page limit unnoticed. Add a `_query` object (`account_ids`, `date_from`, `date_to`) to each saved page so empty windows still close out pending rows. Save the pages under `sync/inbox/backfill-<last4>/personal/<last4>_<n>.json` and run `bin/hpgbooks import sync/inbox/backfill-<last4>/`, then `bin/hpgbooks personal reclassify`. The import is idempotent, so overlapping windows are fine.
 
 The importer is idempotent. Importing the same file again reports `unchanged` and does not duplicate rows. A pending transaction that disappears from a later pull is marked superseded. If a posted transaction in the new file matches it (same account, amount equal or within 20%, date within 7 days), a manual classification is copied onto the posted row.
 
 `needs_review` is the queue of genuinely ambiguous items (IRS payments, card payments that matched no card, unknown merchants). Fix one with:
 
 ```bash
-bin/hpbooks classify <id-prefix> --tag general --category "Software & Licenses" --note "confirmed" --rule
+bin/hpgbooks classify <id-prefix> --tag general --category "Software & Licenses" --note "confirmed" --rule
 ```
 
 `--rule` stores a rule and applies it to the other non-manual rows that match.
 
 ## Daily WHMCS sync
 
-Only when `features.whmcs = true` in the config. `hpbooks whmcs sync` refreshes the WHMCS billing copy. It needs nothing staged in `sync/inbox/`: it opens the SSH tunnels itself (the ports and key from `[whmcs]` in the config), reads every configured brand read-only, writes only the `whmcs_*` tables in the encrypted database, and closes the tunnels it opened. A tunnel that is already open is reused and left open.
+Only when `features.whmcs = true` in the config. `hpgbooks whmcs sync` refreshes the WHMCS billing copy. It needs nothing staged in `sync/inbox/`: it opens the SSH tunnels itself (the ports and key from `[whmcs]` in the config), reads every configured brand read-only, writes only the `whmcs_*` tables in the encrypted database, and closes the tunnels it opened. A tunnel that is already open is reused and left open.
 
 Run it once a day, after the Finance MCP import so the PayPal reconciliation sees the same day's ledger:
 
 ```bash
-bin/hpbooks whmcs sync      # exit status 1 if any brand failed
-bin/hpbooks whmcs status    # last good sync per brand and the recent log
-bin/hpbooks whmcs reconcile # PayPal: matched, WHMCS only, PayPal only, per month
+bin/hpgbooks whmcs sync      # exit status 1 if any brand failed
+bin/hpgbooks whmcs status    # last good sync per brand and the recent log
+bin/hpgbooks whmcs reconcile # PayPal: matched, WHMCS only, PayPal only, per month
 ```
 
 If a billing server's firewall lets in only some addresses, a tunnel can time out. The command retries each tunnel up to 12 times, 5 seconds apart, and a brand that still fails is logged with its error while the other brands go ahead. Running it again later is safe: the sync is a full refresh keyed by (brand, WHMCS id).

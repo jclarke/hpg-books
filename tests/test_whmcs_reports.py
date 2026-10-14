@@ -7,11 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from hpbooks import whmcs_reports as wr
-from hpbooks.cli import main
-from hpbooks.db import HpbooksError, connect, init_db
+from hpgbooks import whmcs_reports as wr
+from hpgbooks.cli import main
+from hpgbooks.db import HpgbooksError, connect, init_db
 from fake_accounts import PAYPAL
-from hpbooks.whmcs import sync
+from hpgbooks.whmcs import sync
 from whmcs_fake import FakeSource, dataset, factory_for
 
 KEY = "a1" * 32
@@ -97,9 +97,9 @@ def test_revenue_by_quarter_and_brand_filter(synced):
     with connect(readonly=True) as conn:
         quarters = wr.revenue(conn, start="2026-01-01", end="2026-06-30", by="quarter", today=TODAY)
         other = wr.revenue(conn, start="2026-01-01", end="2026-06-30", brand="BrandB", today=TODAY)
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             wr.revenue(conn, brand="NotABrand", today=TODAY)
-        with pytest.raises(HpbooksError):
+        with pytest.raises(HpgbooksError):
             wr.revenue(conn, by="week", today=TODAY)
     assert [(item["period"], item["gross_cents"]) for item in quarters["periods"]] == [("2026-Q1", 1200), ("2026-Q2", 15000)]
     assert other["totals"]["gross_cents"] == 0

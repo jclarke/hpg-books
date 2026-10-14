@@ -168,7 +168,7 @@ describe("mode toggle", () => {
     expect(screen.getByLabelText("Business")).toBeInTheDocument();
     await user.click(personal);
     expect(await screen.findByRole("heading", { level: 1, name: "Personal dashboard" })).toBeInTheDocument();
-    expect(window.localStorage.getItem("hpbooks.mode")).toBe("personal");
+    expect(window.localStorage.getItem("hpgbooks.mode")).toBe("personal");
     const nav = screen.getByRole("navigation", { name: "Main" });
     expect(within(nav).getByRole("link", { name: /Net worth/ })).toBeInTheDocument();
     expect(within(nav).queryByRole("link", { name: /Vendors/ })).toBeNull();
@@ -179,7 +179,7 @@ describe("mode toggle", () => {
     expect(dash?.query.get("mode")).toBe("personal");
     await user.click(within(topbar()).getByRole("button", { name: "Business" }));
     expect(await screen.findByRole("heading", { level: 1, name: "Dashboard" })).toBeInTheDocument();
-    expect(window.localStorage.getItem("hpbooks.mode")).toBe("business");
+    expect(window.localStorage.getItem("hpgbooks.mode")).toBe("business");
   });
 
   it("goes to the matching page when one exists", async () => {
@@ -201,23 +201,23 @@ describe("mode toggle", () => {
   });
 
   it("remembers personal mode across a reload of the root page", async () => {
-    window.localStorage.setItem("hpbooks.mode", "personal");
+    window.localStorage.setItem("hpgbooks.mode", "personal");
     personalApi();
     renderApp("/");
     expect(await screen.findByRole("heading", { level: 1, name: "Personal dashboard" })).toBeInTheDocument();
   });
 
   it("lets the URL win over the remembered mode", async () => {
-    window.localStorage.setItem("hpbooks.mode", "personal");
+    window.localStorage.setItem("hpgbooks.mode", "personal");
     personalApi();
     const first = renderApp("/?mode=business");
     expect(await screen.findByRole("heading", { level: 1, name: "Dashboard" })).toBeInTheDocument();
-    expect(window.localStorage.getItem("hpbooks.mode")).toBe("business");
+    expect(window.localStorage.getItem("hpgbooks.mode")).toBe("business");
     first.unmount();
-    window.localStorage.setItem("hpbooks.mode", "business");
+    window.localStorage.setItem("hpgbooks.mode", "business");
     renderApp("/?mode=personal");
     expect(await screen.findByRole("heading", { level: 1, name: "Personal dashboard" })).toBeInTheDocument();
-    expect(window.localStorage.getItem("hpbooks.mode")).toBe("personal");
+    expect(window.localStorage.getItem("hpgbooks.mode")).toBe("personal");
   });
 
   it("sends the mode on every API call", async () => {

@@ -88,7 +88,7 @@ function PnlRedirect() {
 
 /**
  * Applies the mode on load: ?mode= wins; with no ?mode= on the root page, the
- * remembered mode (localStorage hpbooks.mode) decides; the default is business.
+ * remembered mode (localStorage hpgbooks.mode) decides; the default is business.
  * Afterwards the path is the mode, and it is remembered on every change.
  * A mode the install does not have (features.business / features.personal)
  * sends you to the matching page of the other mode.
