@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>hpbooks: private, encrypted books for your business and household</title>
+  <meta name="description" content="A local, encrypted bookkeeping app for a small business and a household. Business P&amp;L, personal net worth, budgets, and bills, on your own computer. Install it by asking Grok Bot.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <a class="brand" href="#top"><span class="brand__mark">B</span> hpbooks</a>
+      <nav class="nav">
+        <a href="#features">Features</a>
+        <a href="#modes">Business &amp; personal</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#grok">Get it</a>
+        <a href="#screens">Screenshots</a>
+        <a class="nav__gh" href="https://github.com/jclarke/hpg-books">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap hero__inner">
+        <div class="hero__copy">
+          <p class="eyebrow">Open source · runs on your own computer</p>
+          <h1>Your books, on your machine, encrypted.</h1>
+          <p class="lead">hpbooks imports your bank and card transactions, sorts them with rules you control, and gives you a P&amp;L for the business and net worth, budgets, and bills for the household. In one encrypted database, with nothing sent anywhere.</p>
+          <div class="cta">
+            <a class="btn btn--primary" href="#grok">Get it with Grok Bot</a>
+            <a class="btn" href="https://github.com/jclarke/hpg-books">View on GitHub</a>
+          </div>
+        </div>
+        <figure class="hero__shot">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="img/01-business-dashboard-dark.png">
+            <img src="img/01-business-dashboard.png" width="1440" height="900" alt="The business dashboard: revenue, expenses, and net income by month">
+          </picture>
+        </figure>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <div class="wrap">
+        <h2>What it does</h2>
+        <div class="grid grid--3">
+          <article class="card">
+            <h3>Import</h3>
+            <p>Transactions from the Finance connector, Capital One and Apple Card CSVs, store-card statement PDFs, and Monarch exports. Re-imports never duplicate, and pending rows are matched to their posted versions.</p>
+          </article>
+          <article class="card">
+            <h3>Classify</h3>
+            <p>Priority-ordered rules, "create a rule from this", a review inbox with suggestions, bulk edits with undo, and transfer matching. Your manual decisions are never overwritten.</p>
+          </article>
+          <article class="card">
+            <h3>Report</h3>
+            <p>P&amp;L by month or by business, cash flow, expenses by vendor, owner draws, a Schedule C-style summary, and a reconciliation. Export to CSV, XLSX, and PDF.</p>
+          </article>
+          <article class="card">
+            <h3>Track payments</h3>
+            <p>Every card and loan with its minimum payment, due date, APR, and autopay, plus what's due in the next 30 days and anything overdue.</p>
+          </article>
+          <article class="card">
+            <h3>Several businesses</h3>
+            <p>Run more than one business in a single ledger, each with its own label and colour, and see them side by side.</p>
+          </article>
+          <article class="card">
+            <h3>Stay current</h3>
+            <p><code>hpbooks update check</code> tells you when there's a new version; updates only fast-forward and never touch your data or config.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="modes" class="section section--alt">
+      <div class="wrap">
+        <h2>Business mode and personal mode</h2>
+        <p class="sub">One database, two sets of books. A <strong>Business | Personal</strong> toggle in the header switches between them, and every account belongs to one side.</p>
+        <div class="grid grid--2">
+          <article class="mode mode--biz">
+            <span class="pill pill--biz">Business</span>
+            <h3>The business ledger</h3>
+            <ul>
+              <li>Dashboard with revenue, expenses, and net income against the prior period</li>
+              <li>Profit &amp; loss by month or by business; click a figure to see its transactions</li>
+              <li>Review inbox, largest first, with "Accept + rule"</li>
+              <li>Owner draws kept below the line, never counted as an expense</li>
+              <li>Expenses by vendor and a year-end Schedule C-style summary</li>
+            </ul>
+          </article>
+          <article class="mode mode--personal">
+            <span class="pill pill--personal">Personal</span>
+            <h3>The household</h3>
+            <ul>
+              <li>Net worth history from balances plus activity</li>
+              <li>Spending by category or merchant, and cash flow</li>
+              <li>Budgets with rollover, pace, and 80% alerts</li>
+              <li>Recurring charges and subscriptions, with price changes flagged</li>
+              <li>Bills, goals, debt payoff, and a monthly summary</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="privacy" class="section">
+      <div class="wrap">
+        <h2>Private by design</h2>
+        <div class="grid grid--3">
+          <article class="card card--icon">
+            <h3>Encrypted database</h3>
+            <p>Everything lives in one SQLCipher-encrypted file. The key sits in a mode-600 file on your computer and is never printed or committed.</p>
+          </article>
+          <article class="card card--icon">
+            <h3>Local only</h3>
+            <p>The web app listens on <code>127.0.0.1</code> and nothing else. For your phone or laptop, optional Tailscale access adds a host allowlist and a passphrase.</p>
+          </article>
+          <article class="card card--icon">
+            <h3>No third parties</h3>
+            <p>The app makes no third-party requests and no network calls for ledger data. Transactions arrive as files saved on your computer, and stay there.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="grok" class="section section--alt">
+      <div class="wrap">
+        <h2>Get it with Grok Bot</h2>
+        <ol class="steps">
+          <li>
+            <h3>Ask Grok Bot to install it</h3>
+            <p>Paste this into a chat:</p>
+            <pre><code>Install the books app from https://github.com/jclarke/hpg-books on your computer and set it up for me.</code></pre>
+            <p>It clones the repository, creates the database key without ever showing it, writes your config, creates the database, starts the web app, and runs the tests.</p>
+          </li>
+          <li>
+            <h3>Answer a few questions</h3>
+            <p>Your company name, your timezone, whether you want business books, personal, or both, your businesses and categories, and which accounts to bring in from the Finance connector you've linked in Grok Bot.</p>
+          </li>
+          <li>
+            <h3>Just ask</h3>
+            <ul class="asks">
+              <li>"Sync my books"</li>
+              <li>"Show me my P&amp;L for September"</li>
+              <li>"What's uncategorized?"</li>
+              <li>"When are my cards due?"</li>
+              <li>"How's my spending this month?"</li>
+              <li>"Export a PDF report"</li>
+              <li>"Check for updates"</li>
+            </ul>
+            <p>Grok Bot can also run the sync and the update check on a schedule.</p>
+          </li>
+          <li>
+            <h3>Open the web app</h3>
+            <p>On the computer where the books run, go to <code>http://127.0.0.1:8765</code>. To open it from elsewhere, ask Grok Bot to set up Tailscale for your books.</p>
+          </li>
+        </ol>
+        <p class="note">Prefer to do it yourself? The <a href="https://github.com/jclarke/hpg-books#install">install steps</a> are in the README.</p>
+      </div>
+    </section>
+
+    <section id="screens" class="section">
+      <div class="wrap">
+        <h2>Screenshots</h2>
+        <p class="sub">From a demo ledger with invented data ("Northwind Hosting Co." and a fictional household). None of it is real.</p>
+        <h3 class="gallery__title"><span class="pill pill--biz">Business</span></h3>
+        <div class="gallery">
+          <figure><a href="img/01-business-dashboard.png"><img src="img/01-business-dashboard.png" width="1440" height="900" loading="lazy" alt="Business dashboard"></a><figcaption>Dashboard</figcaption></figure>
+          <figure><a href="img/03-business-pnl-by-business.png"><img src="img/03-business-pnl-by-business.png" width="1440" height="900" loading="lazy" alt="P&amp;L by business"></a><figcaption>P&amp;L by business</figcaption></figure>
+          <figure><a href="img/04-business-review-inbox.png"><img src="img/04-business-review-inbox.png" width="1440" height="900" loading="lazy" alt="Review inbox"></a><figcaption>Review inbox</figcaption></figure>
+          <figure><a href="img/17-business-expenses-by-vendor.png"><img src="img/17-business-expenses-by-vendor.png" width="1440" height="900" loading="lazy" alt="Expenses by vendor"></a><figcaption>Expenses by vendor</figcaption></figure>
+        </div>
+        <h3 class="gallery__title"><span class="pill pill--personal">Personal</span></h3>
+        <div class="gallery">
+          <figure><a href="img/07-personal-dashboard.png"><img src="img/07-personal-dashboard.png" width="1440" height="900" loading="lazy" alt="Personal dashboard"></a><figcaption>Dashboard</figcaption></figure>
+          <figure><a href="img/09-personal-spending.png"><img src="img/09-personal-spending.png" width="1440" height="900" loading="lazy" alt="Spending by category"></a><figcaption>Spending by category</figcaption></figure>
+          <figure><a href="img/16-personal-spending-by-merchant.png"><img src="img/16-personal-spending-by-merchant.png" width="1440" height="900" loading="lazy" alt="Spending by merchant"></a><figcaption>Spending by merchant</figcaption></figure>
+          <figure><a href="img/10-personal-budgets.png"><img src="img/10-personal-budgets.png" width="1440" height="900" loading="lazy" alt="Budgets"></a><figcaption>Budgets</figcaption></figure>
+          <figure><a href="img/11-personal-subscriptions.png"><img src="img/11-personal-subscriptions.png" width="1440" height="900" loading="lazy" alt="Recurring and subscriptions"></a><figcaption>Recurring &amp; subscriptions</figcaption></figure>
+          <figure><a href="img/14-personal-accounts-payment-terms.png"><img src="img/14-personal-accounts-payment-terms.png" width="1440" height="900" loading="lazy" alt="Accounts with minimum payments and due dates"></a><figcaption>Cards, minimums &amp; due dates</figcaption></figure>
+          <figure><a href="img/13-personal-debt-payoff.png"><img src="img/13-personal-debt-payoff.png" width="1440" height="900" loading="lazy" alt="Debt payoff"></a><figcaption>Debt payoff</figcaption></figure>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <span>hpbooks · local, encrypted bookkeeping</span>
+      <a href="https://github.com/jclarke/hpg-books">github.com/jclarke/hpg-books</a>
+    </div>
+  </footer>
+</body>
+</html>

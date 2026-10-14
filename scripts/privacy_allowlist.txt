@@ -5,3 +5,9 @@
 
 # A public US grocery chain in the generic personal "Groceries" starter rule.
 TRADER JOE
+
+# README screenshots of the invented demo ledger (Northwind Hosting Co.); no real data.
+file:docs/screenshots/*.png
+
+# GitHub Pages site copies of the same demo screenshots; no real data.
+file:site/img/*.png
