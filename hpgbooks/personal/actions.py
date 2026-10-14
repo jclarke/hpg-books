@@ -573,6 +573,45 @@ def update_recurring(conn, series_key: str, body: dict, *, actor: str) -> dict:
     return {"series_key": series_key, **changes}
 
 
+DECISIONS = ("confirmed", "ignored")
+
+
+def _decision_key(value) -> str:
+    key = re.sub(r"\s+", " ", value.strip().upper()) if isinstance(value, str) else ""
+    if not key or len(key) > 200 or key == "(UNKNOWN)":
+        raise HpgbooksError("merchant_key is required")
+    return key
+
+
+def set_recurring_decision(conn, merchant: str, status: str, *, actor: str) -> dict:
+    """Confirm a merchant's repeating charge as a bill, or mark it not recurring. Keyed by merchant key."""
+    key = _decision_key(merchant)
+    if status not in DECISIONS:
+        raise HpgbooksError("status must be confirmed or ignored")
+    old = conn.execute("SELECT status FROM p_recurring_decisions WHERE merchant_key = ?", (key,)).fetchone()
+    now = now_iso()
+    conn.execute(
+        """
+        INSERT INTO p_recurring_decisions (merchant_key, status, created_at, updated_at) VALUES (?, ?, ?, ?)
+        ON CONFLICT(merchant_key) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at
+        """,
+        (key, status, now, now),
+    )
+    audit(conn, "personal_recurring_decision", field=key, old_value=old["status"] if old else None, new_value=status, actor=actor)
+    return {"merchant_key": key, "status": status}
+
+
+def clear_recurring_decision(conn, merchant: str, *, actor: str) -> dict:
+    """Undo: forget the decision so the detector decides again."""
+    key = _decision_key(merchant)
+    old = conn.execute("SELECT status FROM p_recurring_decisions WHERE merchant_key = ?", (key,)).fetchone()
+    if old is None:
+        raise HpgbooksError("no such recurring decision")
+    conn.execute("DELETE FROM p_recurring_decisions WHERE merchant_key = ?", (key,))
+    audit(conn, "personal_recurring_decision", field=key, old_value=old["status"], new_value=None, actor=actor)
+    return {"merchant_key": key, "status": None}
+
+
 def bulk_categorize(conn, txn_ids: list[str], category_id: int, *, actor: str) -> int:
     for txn_id in txn_ids:
         categorize(conn, txn_id, category_id, actor=actor)

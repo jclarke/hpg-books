@@ -642,6 +642,17 @@ CREATE TABLE IF NOT EXISTS debt_offers (
 );
 """
 
+# The owner's call on a repeating charge, by merchant key: confirmed shows it as a
+# bill whatever the detector thinks, ignored hides it for good. Undo deletes the row.
+SCHEMA_V12 = """
+CREATE TABLE IF NOT EXISTS p_recurring_decisions (
+  merchant_key TEXT PRIMARY KEY CHECK (length(merchant_key) BETWEEN 1 AND 200),
+  status TEXT NOT NULL CHECK (status IN ('confirmed', 'ignored')),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+"""
+
 MIGRATIONS = (
     (1, SCHEMA_V1),
     (2, SCHEMA_V2),
@@ -654,6 +665,7 @@ MIGRATIONS = (
     (9, SCHEMA_V9),
     (10, SCHEMA_V10),
     (11, SCHEMA_V11),
+    (12, SCHEMA_V12),
 )
 
 # Keys the web UI is allowed to write. Values are plain text, never secrets.

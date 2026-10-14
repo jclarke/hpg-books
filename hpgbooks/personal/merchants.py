@@ -50,18 +50,42 @@ def merchant_key(merchant: str | None, name: str | None = None) -> str:
     return text or "(UNKNOWN)"
 
 
+# Bank descriptors cut names short; expand the common clipped words.
+ABBREVIATIONS = {
+    "FINAN": "Finance", "FINANC": "Finance", "FINL": "Financial", "SVCS": "Services", "SVC": "Service",
+    "PYMT": "Payment", "PMT": "Payment", "PMNT": "Payment", "MTG": "Mortgage", "MORTG": "Mortgage",
+    "INS": "Insurance", "ELEC": "Electric", "ASSN": "Association", "ASSOC": "Association", "CTR": "Center",
+    "UNIV": "University", "HOSP": "Hospital", "MGMT": "Management", "INTL": "International",
+}
+SMALL_WORDS = frozenset({"OF", "ON", "TO", "AT", "FOR", "AND", "IN", "BY", "THE", "A"})
+CASED = {"INC": "Inc", "CO": "Co", "CORP": "Corp", "LTD": "Ltd", "LLC": "LLC", "LP": "LP"}
+ACRONYMS = frozenset({
+    "USA", "USAA", "IRS", "ATM", "AMC", "HBO", "ESPN", "AAA", "UPS", "USPS", "DMV", "HOA", "AT&T", "ATT", "CVS",
+    "BP", "TV", "IHOP", "AARP", "YMCA", "UA", "EV", "IKEA", "AI", "ID", "US", "PO",
+})
+
+
+def _word(word: str, first: bool) -> str:
+    bare = word.strip(".,")
+    if bare in ABBREVIATIONS:
+        return word.replace(bare, ABBREVIATIONS[bare])
+    if bare in CASED:
+        return word.replace(bare, CASED[bare])
+    if bare in SMALL_WORDS and not first:
+        return word.lower()
+    if bare in ACRONYMS or (bare.isalpha() and len(bare) <= 4 and not re.search(r"[AEIOUY]", bare)):
+        return word
+    return "-".join(part.capitalize() for part in word.split("-"))
+
+
 def default_display(key: str) -> str:
     if key in KNOWN:
         return KNOWN[key]
     if key == "(UNKNOWN)":
         return "Unknown"
-    words = []
-    for word in key.split(" "):
-        if len(word) <= 3 and word.isalpha() and word not in ("THE", "AND"):
-            words.append(word)
-        else:
-            words.append(word.capitalize())
-    return " ".join(words)
+    # A quoted memo ("THANKS") is note text, not part of the name.
+    text = re.sub(r"\s+", " ", re.sub(r'"[^"]*"?', " ", key)).strip() or key
+    return " ".join(_word(word, index == 0) for index, word in enumerate(text.split(" ")))
 
 
 def load_aliases(conn) -> dict[str, dict]:

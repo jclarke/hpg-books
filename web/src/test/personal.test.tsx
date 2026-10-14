@@ -22,6 +22,10 @@ const PERSONAL: Record<string, Handler> = {
   "GET /api/personal/budgets": () => px.budgets,
   "GET /api/personal/budgets/suggestions": () => ({ rows: [{ category_id: 4, category: "Groceries", group: "Food", average_cents: 52000 }] }),
   "GET /api/personal/recurring": () => px.recurring,
+  "GET /api/personal/recurring/review": () => px.recurringReview,
+  "POST /api/personal/recurring/confirm": (call) => ({ ok: true, result: { ...(call.body as object), status: "confirmed" }, review_count: 3 }),
+  "POST /api/personal/recurring/ignore": (call) => ({ ok: true, result: { ...(call.body as object), status: "ignored" }, review_count: 3 }),
+  "POST /api/personal/recurring/undo": (call) => ({ ok: true, result: { ...(call.body as object), status: null }, review_count: 3 }),
   "GET /api/personal/bills": () => px.bills,
   "GET /api/personal/goals": () => ({ rows: px.goals }),
   "GET /api/personal/debt-payoff": () => px.debtPayoff,
@@ -271,22 +275,23 @@ describe("personal writes", () => {
     expect(screen.getByRole("progressbar", { name: /Groceries/ })).toHaveAttribute("aria-valuenow", "92");
   });
 
-  it("confirms, ignores, and re-cadences recurring items", async () => {
+  it("marks not recurring, cancels, and re-cadences recurring items", async () => {
     const calls = personalApi();
     const user = userEvent.setup();
     renderApp("/personal/recurring");
     await screen.findByText("Netflix");
     expect(screen.getByText("may be cancelled")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Ignore Hulu" }));
-    await user.click(screen.getByRole("button", { name: "Confirm Netflix" }));
+    await user.click(screen.getByRole("button", { name: "Not recurring: Hulu" }));
+    await user.click(screen.getByRole("button", { name: "Mark Netflix cancelled" }));
     await user.selectOptions(screen.getByLabelText("Cadence for Netflix"), "annual");
-    await waitFor(() => expect(calls.filter((call) => call.path === "/api/personal/recurring/update").length).toBe(3));
+    await waitFor(() => expect(calls.filter((call) => call.path === "/api/personal/recurring/update").length).toBe(2));
     const bodies = calls.filter((call) => call.path === "/api/personal/recurring/update").map((call) => call.body);
     expect(bodies).toEqual([
-      { series_key: "HULU|out|0", status: "ignored" },
-      { series_key: "NETFLIX|out|0", status: "confirmed" },
+      { series_key: "NETFLIX|out|0", status: "cancelled" },
       { series_key: "NETFLIX|out|0", cadence: "annual" },
     ]);
+    const ignore = calls.find((call) => call.path === "/api/personal/recurring/ignore");
+    expect((ignore?.body as { merchant_key: string }).merchant_key).toBe("HULU");
   });
 
   it("asks before moving an account between modes and shows how many rows move", async () => {
@@ -464,5 +469,99 @@ describe("spending by category", () => {
     await screen.findByRole("table", { name: "Spending by group and category" });
     expect(screen.getByRole("link", { name: "Categories (CSV)" }).getAttribute("href")).toContain("/export/personal/spending.csv");
     expect(screen.getByRole("link", { name: "Merchants (CSV)" }).getAttribute("href")).toContain("/export/personal/merchants.csv");
+  });
+});
+
+describe("dashboard bills and recent transactions", () => {
+  it("lays out bill rows with a date, full merchant name, status chip, and amount", async () => {
+    const long = "Zzq Extremely Long Auto Finance Company Name";
+    personalApi({
+      "GET /api/personal/dashboard": () => ({
+        ...px.pdashboard,
+        upcoming_bills: [
+          { ...px.pdashboard.upcoming_bills[0], merchant: long, status: "late", date: "2026-09-28" },
+          { ...px.pdashboard.upcoming_bills[0], series_key: "ZZQ|out|0", date: "2026-09-30" },
+        ],
+      }),
+    });
+    renderApp("/personal?mode=personal");
+    const list = await screen.findByRole("list", { name: "Upcoming bills" });
+    const rows = within(list).getAllByRole("listitem");
+    expect(rows).toHaveLength(2);
+    const name = within(rows[0]).getByText(long);
+    expect(name).toHaveAttribute("title", long);
+    expect(within(rows[0]).getByText("Late")).toBeInTheDocument();
+    expect(within(rows[0]).getByText("$17.99")).toBeInTheDocument();
+    expect(within(rows[1]).getByText("Today")).toBeInTheDocument();
+    expect(within(rows[0]).getByText("Monthly · Subscriptions")).toBeInTheDocument();
+  });
+
+  it("links to the recurring review when charges need a decision", async () => {
+    const user = userEvent.setup();
+    personalApi();
+    renderApp("/personal?mode=personal");
+    const link = await screen.findByRole("link", { name: "2 need review" });
+    expect(link.getAttribute("href")).toMatch(/^\/personal\/recurring\?.*#needs-review$/);
+    await user.click(link);
+    expect(await screen.findByRole("heading", { level: 1, name: "Recurring & subscriptions" })).toBeInTheDocument();
+  });
+
+  it("hides the review link when nothing needs review", async () => {
+    personalApi({ "GET /api/personal/dashboard": () => ({ ...px.pdashboard, recurring_review_count: 0 }) });
+    renderApp("/personal?mode=personal");
+    await screen.findByRole("list", { name: "Upcoming bills" });
+    expect(screen.queryByRole("link", { name: /^\d+ need review$/ })).toBeNull();
+  });
+
+  it("shows recent rows with a category chip and opens the transaction", async () => {
+    personalApi();
+    renderApp("/personal?mode=personal");
+    const list = await screen.findByRole("list", { name: "Recent transactions" });
+    const first = within(list).getAllByRole("link")[0];
+    expect(first.getAttribute("href")).toContain(`txn=${encodeURIComponent(px.pdashboard.recent[0].id)}`);
+    expect(first.querySelector(".dash-row__date")).not.toBeNull();
+    expect(first.querySelector(".dash-row__amount")).not.toBeNull();
+  });
+
+  it("collapses empty budgets and goals into one compact card", async () => {
+    personalApi({ "GET /api/personal/dashboard": () => ({ ...px.pdashboard, budget: { ...px.pdashboard.budget, budgeted_cents: 0 }, goals: [] }) });
+    renderApp("/personal?mode=personal");
+    expect(await screen.findByRole("heading", { name: "Budgets & goals" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Set budgets" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Add a goal" })).toBeInTheDocument();
+  });
+});
+
+describe("recurring review", () => {
+  it("lists charges to review and confirms one as a bill", async () => {
+    const calls = personalApi();
+    const user = userEvent.setup();
+    renderApp("/personal/recurring?mode=personal");
+    const list = await screen.findByRole("list", { name: "Recurring charges to review" });
+    expect(within(list).getByText("Zzq Meal Kit")).toBeInTheDocument();
+    expect(within(list).getByText("Food is usually not a bill")).toBeInTheDocument();
+    // Review items stay out of the main recurring table.
+    expect(within(screen.getByRole("table")).queryByText("Zzq Meal Kit")).toBeNull();
+    await user.click(within(list).getByRole("button", { name: "Confirm Zzq Meal Kit as a bill" }));
+    await waitFor(() => expect(calls.some((call) => call.path === "/api/personal/recurring/confirm")).toBe(true));
+    const call = calls.find((c) => c.path === "/api/personal/recurring/confirm");
+    expect((call?.body as { merchant_key: string }).merchant_key).toBe("ZZQ MEAL KIT");
+  });
+
+  it("marks a charge not recurring and undoes earlier decisions", async () => {
+    const calls = personalApi();
+    const user = userEvent.setup();
+    renderApp("/personal/recurring?mode=personal");
+    const list = await screen.findByRole("list", { name: "Recurring charges to review" });
+    await user.click(within(list).getByRole("button", { name: "Zzq Meal Kit is not recurring" }));
+    await waitFor(() => expect(calls.some((call) => call.path === "/api/personal/recurring/ignore")).toBe(true));
+    const confirmed = screen.getByRole("list", { name: "Confirmed bills" });
+    expect(within(confirmed).getByText("Zzq Lawn Care")).toBeInTheDocument();
+    const ignored = screen.getByRole("list", { name: "Not recurring" });
+    await user.click(within(ignored).getByRole("button", { name: "Undo not recurring for Zzq Cinema" }));
+    await waitFor(() => {
+      const undo = calls.find((call) => call.path === "/api/personal/recurring/undo");
+      expect((undo?.body as { merchant_key: string } | undefined)?.merchant_key).toBe("ZZQ CINEMA");
+    });
   });
 });

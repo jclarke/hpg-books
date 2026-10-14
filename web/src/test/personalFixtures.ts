@@ -13,6 +13,7 @@ import type {
   PTxn,
   PTxnPage,
   Recurring,
+  RecurringReview,
   Spending,
 } from "../api/personal";
 import type { Payments, PersonalCategory, Session } from "../api/types";
@@ -120,6 +121,7 @@ export const pdashboard: PDashboard = {
   budget: { budgeted_cents: 60000, spent_cents: 55000, counts: { ok: 0, warning: 1, over: 0 }, alerts: [{ name: "Groceries", status: "warning", pct_used: 91.7, spent_cents: 55000, available_cents: 60000 }] },
   upcoming_bills: [{ date: "2026-10-08", series_key: "NETFLIX|out|0", merchant: "Netflix", kind: "subscription", direction: "out", cadence: "monthly", category: "Subscriptions", account_label: "Fake Rewards Visa", status: "due", amount_cents: 1799 }],
   subscription_monthly_cents: 2998,
+  recurring_review_count: 2,
   review_count: 3,
   goals: [],
   recent: ptxns,
@@ -210,13 +212,22 @@ export const budgets: Budgets = {
 export const recurring: Recurring = {
   as_of: "2026-09-30",
   items: [
-    { series_key: "NETFLIX|out|0", merchant_key: "NETFLIX", merchant: "Netflix", direction: "out", account_id: CARD, account_label: "Fake Rewards Visa", category_id: 6, category: "Subscriptions", group: "Subscriptions", cadence: "monthly", count: 12, first_seen: "2025-10-08", last_date: "2026-09-08", next_expected: "2026-10-08", typical_cents: 1799, last_cents: 1799, monthly_cents: 1799, annual_cents: 21588, price_change: { from_cents: 1549, to_cents: 1799, change_cents: 250 }, may_be_cancelled: false, new: false, possible_duplicate: false, kind: "subscription", status: "active", user_confirmed: false, notes: "" },
-    { series_key: "HULU|out|0", merchant_key: "HULU", merchant: "Hulu", direction: "out", account_id: CARD, account_label: "Fake Rewards Visa", category_id: 6, category: "Subscriptions", group: "Subscriptions", cadence: "monthly", count: 8, first_seen: "2025-08-19", last_date: "2026-03-19", next_expected: "2026-04-19", typical_cents: 799, last_cents: 799, monthly_cents: 799, annual_cents: 9588, price_change: null, may_be_cancelled: true, new: false, possible_duplicate: false, kind: "subscription", status: "active", user_confirmed: false, notes: "" },
+    { series_key: "NETFLIX|out|0", merchant_key: "NETFLIX", merchant: "Netflix", direction: "out", account_id: CARD, account_label: "Fake Rewards Visa", category_id: 6, category: "Subscriptions", group: "Subscriptions", cadence: "monthly", count: 12, first_seen: "2025-10-08", last_date: "2026-09-08", next_expected: "2026-10-08", typical_cents: 1799, last_cents: 1799, monthly_cents: 1799, annual_cents: 21588, price_change: { from_cents: 1549, to_cents: 1799, change_cents: 250 }, may_be_cancelled: false, new: false, possible_duplicate: false, kind: "subscription", tier: "bill", review_reasons: [], decision: null, status: "active", user_confirmed: false, notes: "" },
+    { series_key: "HULU|out|0", merchant_key: "HULU", merchant: "Hulu", direction: "out", account_id: CARD, account_label: "Fake Rewards Visa", category_id: 6, category: "Subscriptions", group: "Subscriptions", cadence: "monthly", count: 8, first_seen: "2025-08-19", last_date: "2026-03-19", next_expected: "2026-04-19", typical_cents: 799, last_cents: 799, monthly_cents: 799, annual_cents: 9588, price_change: null, may_be_cancelled: true, new: false, possible_duplicate: false, kind: "subscription", tier: "bill", review_reasons: [], decision: null, status: "active", user_confirmed: false, notes: "" },
+    { series_key: "ZZQ MEAL KIT|out|0", merchant_key: "ZZQ MEAL KIT", merchant: "Zzq Meal Kit", direction: "out", account_id: CARD, account_label: "Fake Rewards Visa", category_id: 4, category: "Groceries", group: "Food", cadence: "monthly", count: 5, first_seen: "2026-05-10", last_date: "2026-09-10", next_expected: "2026-10-10", typical_cents: 6000, last_cents: 6000, monthly_cents: 6000, annual_cents: 72000, price_change: null, may_be_cancelled: false, new: false, possible_duplicate: false, kind: "bill", tier: "review", review_reasons: ["Food is usually not a bill"], decision: null, status: "active", user_confirmed: false, notes: "" },
   ],
   subscription_monthly_cents: 1799,
   subscription_annual_cents: 21588,
   bill_monthly_cents: 50000,
-  counts: { subscriptions: 1, bills: 3, income: 1, price_changes: 1, may_be_cancelled: 1, possible_duplicates: 0 },
+  counts: { subscriptions: 1, bills: 3, income: 1, price_changes: 1, may_be_cancelled: 1, possible_duplicates: 0, needs_review: 1 },
+};
+
+export const recurringReview: RecurringReview = {
+  as_of: "2026-09-30",
+  needs_review: 1,
+  review: [recurring.items[2]],
+  confirmed: [{ merchant_key: "ZZQ LAWN CARE", merchant: "Zzq Lawn Care", status: "confirmed", created_at: "2026-09-20T10:00:00+00:00", updated_at: "2026-09-20T10:00:00+00:00", cadence: "biweekly", typical_cents: 4500 }],
+  ignored: [{ merchant_key: "ZZQ CINEMA", merchant: "Zzq Cinema", status: "ignored", created_at: "2026-09-21T10:00:00+00:00", updated_at: "2026-09-21T10:00:00+00:00", cadence: null, typical_cents: null }],
 };
 
 export const bills: Bills = {

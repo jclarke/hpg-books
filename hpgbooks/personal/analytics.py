@@ -13,7 +13,7 @@ from __future__ import annotations
 import calendar
 from datetime import date, timedelta
 
-from hpgbooks.db import HpgbooksError
+from hpgbooks.db import HpgbooksError, _table_exists
 from hpgbooks.personal import recurring as rec
 from hpgbooks.personal.balances import is_liability, load_series
 from hpgbooks.personal.classify import (
@@ -662,11 +662,27 @@ def recurring_overrides(conn) -> dict[str, dict]:
     }
 
 
+def recurring_decisions(conn) -> dict[str, dict]:
+    """merchant_key -> {status, created_at, updated_at}. Empty on a read-only DB from before v12."""
+    if not _table_exists(conn, "p_recurring_decisions"):
+        return {}
+    return {
+        row["merchant_key"]: {key: row[key] for key in row.keys()}
+        for row in conn.execute("SELECT * FROM p_recurring_decisions")
+    }
+
+
+def _detect(conn, end: date) -> list[dict]:
+    rows = load_personal(conn, (end - timedelta(days=800)).isoformat(), end.isoformat())
+    decisions = {key: row["status"] for key, row in recurring_decisions(conn).items()}
+    return rec.detect(rows, end, recurring_overrides(conn), decisions)
+
+
 def recurring(conn) -> dict:
     now = today()
-    rows = load_personal(conn, (now - timedelta(days=800)).isoformat(), now.isoformat())
-    items = rec.detect(rows, now, recurring_overrides(conn))
-    live = [item for item in items if item["status"] not in ("ignored", "cancelled")]
+    items = _detect(conn, now)
+    review = [item for item in items if item["tier"] == "review" and item["status"] not in ("ignored", "cancelled")]
+    live = [item for item in items if item["status"] not in ("ignored", "cancelled") and item["tier"] != "review"]
     subs = [item for item in live if item["kind"] == "subscription" and not item["may_be_cancelled"]]
     bills = [item for item in live if item["kind"] == "bill" and not item["may_be_cancelled"]]
     return {
@@ -682,7 +698,51 @@ def recurring(conn) -> dict:
             "price_changes": sum(1 for item in live if item["price_change"]),
             "may_be_cancelled": sum(1 for item in live if item["may_be_cancelled"]),
             "possible_duplicates": sum(1 for item in live if item["possible_duplicate"]),
+            "needs_review": len(review),
         },
+    }
+
+
+def recurring_review(conn) -> dict:
+    """Repeating charges waiting for a confirm / not-recurring call, plus the calls already made."""
+    from hpgbooks.personal.merchants import display_for, load_aliases
+
+    data = recurring(conn)
+    decisions = recurring_decisions(conn)
+    aliases = load_aliases(conn)
+    review = [item for item in data["items"] if item["tier"] == "review" and item["status"] not in ("ignored", "cancelled")]
+    review.sort(key=lambda item: (-item["monthly_cents"], item["merchant"].lower()))
+    by_key: dict[str, list[dict]] = {}
+    for item in data["items"]:
+        if item["direction"] == "out":
+            by_key.setdefault(item["merchant_key"], []).append(item)
+
+    def decided(status: str) -> list[dict]:
+        out = []
+        for key, row in decisions.items():
+            if row["status"] != status:
+                continue
+            series = by_key.get(key, [])
+            out.append(
+                {
+                    "merchant_key": key,
+                    "merchant": series[0]["merchant"] if series else display_for(key, aliases),
+                    "status": status,
+                    "created_at": row["created_at"],
+                    "updated_at": row["updated_at"],
+                    "cadence": series[0]["cadence"] if series else None,
+                    "typical_cents": series[0]["typical_cents"] if series else None,
+                }
+            )
+        out.sort(key=lambda item: item["merchant"].lower())
+        return out
+
+    return {
+        "as_of": data["as_of"],
+        "needs_review": len(review),
+        "review": review,
+        "confirmed": decided("confirmed"),
+        "ignored": decided("ignored"),
     }
 
 
@@ -724,7 +784,7 @@ def bills(conn, days: int = 45) -> dict:
     data = recurring(conn)
     events = []
     for item in data["items"]:
-        if item["status"] in ("ignored", "cancelled") or item["may_be_cancelled"]:
+        if item["status"] in ("ignored", "cancelled") or item["may_be_cancelled"] or item["tier"] == "review":
             continue
         for day in item["dates"]:
             if month_start.isoformat() <= day <= now.isoformat():
@@ -789,7 +849,10 @@ def dashboard(conn) -> dict:
     worth = net_worth(conn, "3M")
     budget = budgets(conn, month)
     recurring_data = recurring(conn)
-    upcoming = [event for event in bills(conn, 14)["events"] if event["status"] in ("due", "late", "overdue")]
+    upcoming = [
+        event for event in bills(conn, 14)["events"]
+        if event["direction"] == "out" and event["status"] in ("due", "late", "overdue")
+    ]
     recent = sorted(load_personal(conn, (now - timedelta(days=60)).isoformat(), now.isoformat()), key=lambda row: (row["date"], row["id"]), reverse=True)[:10]
     review = sum(1 for row in load_personal(conn, include_synthesized=False) if needs_review(row))
     return {
@@ -822,6 +885,7 @@ def dashboard(conn) -> dict:
         },
         "upcoming_bills": upcoming[:10],
         "subscription_monthly_cents": recurring_data["subscription_monthly_cents"],
+        "recurring_review_count": recurring_data["counts"]["needs_review"],
         "review_count": review,
         "goals": goals(conn)[:4],
         "recent": [_public_row(row) for row in recent],
@@ -870,8 +934,7 @@ def monthly_summary(conn, month: str) -> dict:
         key=lambda row: (row["amount_cents"], row["date"]),
     )[:5]
     end_d = date.fromisoformat(month_end(month))
-    rows_recurring = load_personal(conn, (end_d - timedelta(days=800)).isoformat(), end_d.isoformat())
-    series = rec.detect(rows_recurring, end_d, recurring_overrides(conn))
+    series = [item for item in _detect(conn, end_d) if item["tier"] != "review"]
     new_subs = [item for item in series if item["first_seen"].startswith(month) and item["direction"] == "out"]
     changed = [
         item for item in series

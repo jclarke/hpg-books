@@ -36,7 +36,7 @@ def test_fresh_database_has_the_table_once(db):
     with connect() as conn:
         assert "debt_offers" in _tables(conn)
         versions = [row[0] for row in conn.execute("SELECT version FROM schema_version ORDER BY version")]
-        assert versions == [version for version, _sql in hpdb.MIGRATIONS] and versions[-1] == 11
+        assert versions == [version for version, _sql in hpdb.MIGRATIONS] and versions[-1] >= 11
         hpdb._apply_migrations(conn)
         hpdb._apply_migrations(conn)
         assert conn.execute("SELECT COUNT(*) FROM schema_version WHERE version = 11").fetchone()[0] == 1
@@ -64,7 +64,7 @@ def test_migration_applies_to_a_version_10_database_and_keeps_its_data(tmp_path,
         after = {name: conn.execute(f"SELECT COUNT(*) FROM {name}").fetchone()[0] for name in before}
         assert after == before
         schema_after = {row[0]: row[1] for row in conn.execute("SELECT name, sql FROM sqlite_master WHERE type = 'table'")}
-        assert {k: v for k, v in schema_after.items() if k != "debt_offers"} == schema_before  # additive only
+        assert {k: v for k, v in schema_after.items() if k not in ("debt_offers", "p_recurring_decisions")} == schema_before  # additive only
     with connect() as conn:
         assert conn.execute("SELECT COUNT(*) FROM schema_version WHERE version = 11").fetchone()[0] == 1
 

@@ -296,6 +296,12 @@ def recurring():
         return jsonify({"ok": True, **pa.recurring(conn)})
 
 
+@personal_api.get("/api/personal/recurring/review")
+def recurring_review():
+    with connect(readonly=True) as conn:
+        return jsonify({"ok": True, **pa.recurring_review(conn)})
+
+
 @personal_api.get("/api/personal/bills")
 def bills():
     days = _int_arg("days", 45, 1, 120)
@@ -607,6 +613,19 @@ def recurring_update():
     if not isinstance(key, str):
         raise PersonalError("series_key is required")
     return _write(lambda conn: actions.update_recurring(conn, key, body, actor="web"))
+
+
+@personal_api.post("/api/personal/recurring/<any(confirm, ignore):verb>")
+def recurring_decide(verb):
+    body = _body()
+    status = "confirmed" if verb == "confirm" else "ignored"
+    return _write(lambda conn: actions.set_recurring_decision(conn, body.get("merchant_key"), status, actor="web"))
+
+
+@personal_api.post("/api/personal/recurring/undo")
+def recurring_undo():
+    body = _body()
+    return _write(lambda conn: actions.clear_recurring_decision(conn, body.get("merchant_key"), actor="web"))
 
 
 @personal_api.post("/api/personal/recurring/refresh")

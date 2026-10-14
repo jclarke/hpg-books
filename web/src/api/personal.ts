@@ -189,9 +189,31 @@ export interface RecurringItem {
   new: boolean;
   possible_duplicate: boolean;
   kind: "bill" | "subscription" | "income";
+  /** bill: a sure recurring charge; review: repeats, but the owner should say whether it is a bill. */
+  tier: "bill" | "review" | "income";
+  review_reasons: string[];
+  decision: "confirmed" | null;
   status: "active" | "cancelled" | "ignored" | "confirmed";
   user_confirmed: boolean;
   notes: string;
+}
+
+export interface RecurringDecision {
+  merchant_key: string;
+  merchant: string;
+  status: "confirmed" | "ignored";
+  created_at: string;
+  updated_at: string;
+  cadence: RecurringItem["cadence"] | null;
+  typical_cents: number | null;
+}
+
+export interface RecurringReview {
+  as_of: string;
+  needs_review: number;
+  review: RecurringItem[];
+  confirmed: RecurringDecision[];
+  ignored: RecurringDecision[];
 }
 
 export interface Recurring {
@@ -334,6 +356,7 @@ export interface PDashboard {
   budget: { budgeted_cents: number; spent_cents: number; counts: Record<string, number>; alerts: Budgets["alerts"] };
   upcoming_bills: BillEvent[];
   subscription_monthly_cents: number;
+  recurring_review_count: number;
   review_count: number;
   goals: Goal[];
   recent: PTxn[];
@@ -468,6 +491,7 @@ export const pkeys = {
   budgets: (month: string) => ["personal", "budgets", month] as const,
   suggestions: (month: string) => ["personal", "budget-suggestions", month] as const,
   recurring: () => ["personal", "recurring"] as const,
+  recurringReview: () => ["personal", "recurring-review"] as const,
   bills: (days: number) => ["personal", "bills", days] as const,
   goals: () => ["personal", "goals"] as const,
   debtPayoff: () => ["personal", "debt-payoff"] as const,
@@ -513,6 +537,7 @@ export const useBudgetSuggestions = (month: string, enabled: boolean) =>
     enabled,
   });
 export const useRecurring = () => useQuery({ queryKey: pkeys.recurring(), queryFn: get<Recurring>("/recurring") });
+export const useRecurringReview = () => useQuery({ queryKey: pkeys.recurringReview(), queryFn: get<RecurringReview>("/recurring/review") });
 export const useBills = (days: number) => useQuery({ queryKey: pkeys.bills(days), queryFn: get<Bills>("/bills", { days }) });
 export const useDebtPayoff = () => useQuery({ queryKey: pkeys.debtPayoff(), queryFn: get<DebtPayoff>("/debt-payoff") });
 export const useDebtOffers = () => useQuery({ queryKey: pkeys.debtOffers(), queryFn: get<{ rows: DebtOffer[] }>("/debt-offers") });

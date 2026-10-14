@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { useBills, type BillEvent } from "../../api/personal";
+import { Link, useLocation } from "react-router-dom";
+import { useBills, useRecurringReview, type BillEvent } from "../../api/personal";
 import { Badge } from "../../components/Badge";
 import { Card, CardHeader } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
@@ -9,6 +10,7 @@ import { PageHeader } from "../../components/PageHeader";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { SkeletonCard } from "../../components/Skeleton";
 import { CsvLink, PERSONAL_EYEBROW, PersonalLoadError } from "../../components/personal/PersonalKit";
+import { withGlobal } from "../../hooks/useGlobalFilters";
 import { cx } from "../../lib/cx";
 import { formatDate, formatMonth } from "../../lib/format";
 
@@ -19,6 +21,8 @@ export default function BillsPage() {
   const query = useBills(Number(days));
   const data = query.data;
   const [view, setView] = useState<"list" | "calendar">("list");
+  const review = useRecurringReview().data?.needs_review ?? 0;
+  const location = useLocation();
   return (
     <div className="page page--personal">
       <PageHeader
@@ -34,6 +38,12 @@ export default function BillsPage() {
         }
       />
       {query.isError ? <PersonalLoadError error={query.error} onRetry={() => query.refetch()} /> : null}
+      {review ? (
+        <p className="muted small">
+          {review} repeating {review === 1 ? "charge is" : "charges are"} not counted until you decide.{" "}
+          <Link to={`${withGlobal("/personal/recurring", location.search)}#needs-review`}>Review them</Link>
+        </p>
+      ) : null}
       {query.isPending ? <SkeletonCard height={200} /> : null}
       {data ? (
         <>

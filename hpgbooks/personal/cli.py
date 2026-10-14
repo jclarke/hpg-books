@@ -392,15 +392,15 @@ def _recurring_text(d) -> str:
          _money(item["monthly_cents"]),
          " ".join(flag for flag, on in (("price-change", item["price_change"]), ("may-be-cancelled", item["may_be_cancelled"]),
                                         ("new", item["new"]), ("duplicate?", item["possible_duplicate"])) if on),
-         item["status"]]
+         item["status"], item["tier"]]
         for item in d["items"]
     ]
     head = f"Subscriptions {_money(d['subscription_monthly_cents'])}/month, {_money(d['subscription_annual_cents'])}/year"
-    return head + "\n\n" + _table(["merchant", "kind", "cadence", "typical", "last", "next", "monthly", "flags", "status"], body, right_from=3)
+    return head + "\n\n" + _table(["merchant", "kind", "cadence", "typical", "last", "next", "monthly", "flags", "status", "tier"], body, right_from=3)
 
 
 RECURRING_COLUMNS = [("merchant", "Merchant"), ("kind", "Kind"), ("cadence", "Cadence"), ("typical_cents", "Typical"),
-                     ("next_expected", "Next"), ("monthly_cents", "Monthly"), ("annual_cents", "Annual"), ("status", "Status"), ("series_key", "Key")]
+                     ("next_expected", "Next"), ("monthly_cents", "Monthly"), ("annual_cents", "Annual"), ("status", "Status"), ("tier", "Tier"), ("series_key", "Key")]
 
 
 def cmd_recurring(args) -> int:
