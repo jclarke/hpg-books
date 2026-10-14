@@ -13,6 +13,7 @@
     <div class="wrap topbar__inner">
       <a class="brand" href="#top"><span class="brand__mark">B</span> HPG Books</a>
       <nav class="nav">
+        <a href="#how">How it works</a>
         <a href="#features">Features</a>
         <a href="#modes">Business &amp; personal</a>
         <a href="#privacy">Privacy</a>
@@ -36,6 +37,7 @@
             <a class="btn" href="#grok">How to install</a>
             <a class="btn" href="https://github.com/jclarke/hpg-books">View on GitHub</a>
           </div>
+          <p class="requires"><strong>Requires Grok Bot.</strong> HPG Books is set up and run by Grok Bot on its own cloud computer, and your transactions come in through Grok Bot's Finance connector. <a href="#how">How it works</a></p>
         </div>
         <figure class="hero__shot">
           <picture>
@@ -43,6 +45,45 @@
             <img src="img/01-business-dashboard.png" width="1440" height="900" alt="The business dashboard: revenue, expenses, and net income by month">
           </picture>
         </figure>
+      </div>
+    </section>
+
+    <section id="how" class="section section--alt">
+      <div class="wrap">
+        <h2>How it works</h2>
+        <p class="note">HPG Books is meant to be set up and run inside Grok Bot. You talk to your bot; it does the installing, syncing, and upkeep.</p>
+        <ol class="flow" aria-label="How HPG Books runs inside Grok Bot">
+          <li class="flow__step">
+            <span class="flow__num">1</span>
+            <h3>Grok Bot template</h3>
+            <p>Start from the <a href="https://x.ai/bot/gHLmbUpkuYNbv0F-J2JwC">template</a>. It brings the app's skills and routines.</p>
+          </li>
+          <li class="flow__step">
+            <span class="flow__num">2</span>
+            <h3>Grok Bot installs it</h3>
+            <p>On its own cloud computer, not your laptop. It creates the encrypted database and asks you a few questions.</p>
+          </li>
+          <li class="flow__step flow__step--wide">
+            <span class="flow__num">3</span>
+            <h3>Connections</h3>
+            <ul class="flow__links">
+              <li><strong>Finance connector</strong> <span class="tag tag--req">required</span><br>Where bank and card transactions and balances come from.</li>
+              <li><strong>Monarch</strong> <span class="tag">optional</span><br>For accounts the Finance connector doesn't cover.</li>
+              <li><strong>Tailscale</strong> <span class="tag">optional</span><br>Private access to the web app from your devices.</li>
+            </ul>
+          </li>
+          <li class="flow__step">
+            <span class="flow__num">4</span>
+            <h3>App and routines run</h3>
+            <p>Grok Bot keeps the books synced, the bills current, and the app up on a <a href="#routines">schedule</a>.</p>
+          </li>
+          <li class="flow__step">
+            <span class="flow__num">5</span>
+            <h3>You use it</h3>
+            <p>Open the web app over Tailscale, or just ask your bot: "What's uncategorized?"</p>
+          </li>
+        </ol>
+        <p class="note"><strong>Without Grok Bot?</strong> A manual, standalone install is possible (the <a href="https://github.com/jclarke/hpg-books#install">install steps</a> are in the README), and the app can import CSV and statement files you download yourself. But automatic data sync relies on Grok Bot's Finance connector, so without Grok Bot you bring the data in by hand.</p>
       </div>
     </section>
 
