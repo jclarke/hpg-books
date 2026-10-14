@@ -169,7 +169,7 @@ def test_zip_install_check_and_apply(tmp_path, monkeypatch, capsys):
 
 
 def test_update_config_defaults_and_override():
-    assert hpconfig.build({}).update == UpdateConfig("jclarke/grok-books", "public", "main")
+    assert hpconfig.build({}).update == UpdateConfig("jclarke/hpg-books", "public", "main")
     cfg = hpconfig.build({"update": {"repo": "someone/books", "branch": "stable"}})
     assert cfg.update == UpdateConfig("someone/books", "public", "stable")
     with pytest.raises(hpconfig.ConfigError):

@@ -156,7 +156,7 @@ class ImportersConfig:
 class UpdateConfig:
     """Where `hpbooks update check|apply` looks. A git remote named `remote` wins; else `repo` on GitHub."""
 
-    repo: str = "jclarke/grok-books"
+    repo: str = "jclarke/hpg-books"
     remote: str = "public"
     branch: str = "main"
 

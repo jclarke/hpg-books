@@ -33,7 +33,7 @@ Business tags, categories, and the accounts `init` seeds are read once per proce
 | `[importers]` | Defaults for the scripts in `scripts/` (see [importers.md](importers.md)) |
 | `[[payments.payer_hints]]` | How `accounts infer-payments` finds a loan's payments in a bank account |
 | `[whmcs]` | Only read when `features.whmcs = true`; see [whmcs.md](whmcs.md) |
-| `[update]` | `repo` (`owner/name`, default `jclarke/grok-books`), `remote` (default `public`), `branch` (default `main`) for `hpbooks update check\|apply`; see the README's Updates section |
+| `[update]` | `repo` (`owner/name`, default `jclarke/hpg-books`), `remote` (default `public`), `branch` (default `main`) for `hpbooks update check\|apply`; see the README's Updates section |
 
 Keep personal rule patterns, account ids, and real names in `config/local.toml` and in a `rules_file` such as `config/seed_rules.local.json`. Both match the `.gitignore` patterns (`config/local.toml`, `config/*.local.*`) and are never committed.
 

@@ -189,6 +189,6 @@ paypal_account_role = "paypal"
 [update]
 # Upstream public snapshot repo for `hpbooks update check|apply`.
 # Prefer a git remote named "public"; these keys are the fallback.
-repo = "jclarke/grok-books"
+repo = "jclarke/hpg-books"
 remote = "public"
 branch = "main"

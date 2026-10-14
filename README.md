@@ -4,67 +4,6 @@ A local, encrypted bookkeeping app for a small business and a household. It impo
 
 Nothing leaves the machine. The database is SQLCipher-encrypted, the web server listens on `127.0.0.1` only, and the app makes no third-party requests. The product name shown in the UI comes from your config (default "Books").
 
-## Use it with Grok Bot
-
-hpbooks is a private bookkeeping app that runs on your own computer: business books, personal finances, or both, in one encrypted database.
-
-**1. Ask Grok Bot to install it.** Paste this into a chat:
-
-```text
-Install the books app from https://github.com/jclarke/grok-books on your computer and set it up for me.
-```
-
-Grok Bot clones the repository, creates the database key (it never shows the key or puts it in chat), writes your config, creates the database, starts the web app, and runs the tests. The checklist it follows is in [Installing with an AI assistant](#installing-with-an-ai-assistant).
-
-**2. Answer a few questions.** Before it creates the database, Grok Bot asks for:
-
-- Your company name, shown in the sidebar and on P&L titles.
-- Your timezone, so scheduled syncs and update checks run at sensible times.
-- Business, personal, or both. Each mode is a switch in the config.
-- Your businesses and categories, if you keep business books. These are fixed when the database is created.
-- Which bank and card accounts to bring in, from the Finance connector you have linked in Grok Bot. New accounts start as personal; any of them can be moved to business.
-
-**3. Use it day to day.** Just ask:
-
-| Ask Grok Bot | What happens |
-|---|---|
-| "Sync my books" | Pulls the last 10 days for every linked account through the Finance connector, imports it (re-imports never duplicate), and refreshes balances. See [sync/README.md](sync/README.md). |
-| "Show me my P&L for September" | Profit and loss by month or by business, with owner draws below the line. |
-| "What's uncategorized?" | The review queue, largest first, with suggestions. A fix can be saved as a rule so the same merchant is handled next time. |
-| "When are my cards due?" | Minimum payments, due dates, and APRs for every card and loan, soonest first. See [docs/payment-tracking.md](docs/payment-tracking.md). |
-| "How's my spending this month?" | Personal spending by category, budgets, and recurring charges. See [docs/personal-mode.md](docs/personal-mode.md). |
-| "Export a PDF report" | The P&L as a PDF; CSV and XLSX work too. |
-| "Check for updates" | Runs `bin/hpbooks update check` and tells you what is new. It updates only when you say so. See [Updates](#updates). |
-
-Grok Bot can also run the sync and the update check every day on a schedule; the update check stays quiet unless there is a new version ([docs/update-routine.md](docs/update-routine.md)).
-
-**4. Open the web app.** On the computer where the books run, go to <http://127.0.0.1:8765>. The **Business | Personal** toggle in the header switches modes. To open it from your laptop or phone, ask Grok Bot to "set up Tailscale for my books": the app stays on `127.0.0.1`, Tailscale forwards a private tailnet port to it, and a passphrase is required. See [Remote access with Tailscale](#remote-access-with-tailscale-optional).
-
-The app itself makes no network calls for ledger data: Grok Bot saves what the Finance connector returns as files on that computer, and hpbooks imports those files into the encrypted database.
-
-## Screenshots
-
-Every screenshot below comes from a demo ledger with invented data ("Northwind Hosting Co.", three made-up businesses, and a fictional household). None of it is real.
-
-**Business mode**
-
-| | |
-|---|---|
-| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/01-business-dashboard-dark.png"><img src="docs/screenshots/01-business-dashboard.png" alt="Business dashboard"></picture><br>**Dashboard**: revenue, expenses, and net income by month, compared with the prior period. | ![Profit and loss by month](docs/screenshots/02-business-pnl-by-month.png)<br>**Profit & Loss** by month. Click any figure to see the transactions behind it. |
-| ![P&L by business](docs/screenshots/03-business-pnl-by-business.png)<br>**P&L by business**: each business side by side in one ledger. | ![Review inbox](docs/screenshots/04-business-review-inbox.png)<br>**Review inbox**: unclassified rows, largest first, with suggestions and "Accept + rule". |
-| ![Transactions](docs/screenshots/05-business-transactions.png)<br>**Transactions** with inline business and category classification. | ![Schedule C-style summary](docs/screenshots/06-business-schedule-c.png)<br>**Schedule C-style summary**, a year-end bookkeeping aid. |
-| ![Expenses by vendor](docs/screenshots/17-business-expenses-by-vendor.png)<br>**Expenses by vendor**: top merchants by spend, with CSV, XLSX, and PDF export. | |
-
-**Personal mode**
-
-| | |
-|---|---|
-| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/07-personal-dashboard-dark.png"><img src="docs/screenshots/07-personal-dashboard.png" alt="Personal dashboard"></picture><br>**Personal dashboard**: net worth, this month's income and spending, and savings rate. | ![Net worth](docs/screenshots/08-personal-net-worth.png)<br>**Net worth** history from balance anchors plus activity. |
-| ![Spending](docs/screenshots/09-personal-spending.png)<br>**Spending** by category, compared with the prior period. | ![Budgets](docs/screenshots/10-personal-budgets.png)<br>**Budgets** with progress, pace, and 80% alerts. |
-| ![Recurring and subscriptions](docs/screenshots/11-personal-subscriptions.png)<br>**Recurring & subscriptions**: price changes and possible cancellations are flagged. | ![Goals](docs/screenshots/12-personal-goals.png)<br>**Goals** linked to an account or tracked by hand. |
-| ![Debt payoff](docs/screenshots/13-personal-debt-payoff.png)<br>**Debt payoff**: compare saved loan offers with paying the cards as you are. | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/14-personal-accounts-payment-terms-dark.png"><img src="docs/screenshots/14-personal-accounts-payment-terms.png" alt="Accounts with payment terms"></picture><br>**Accounts**: each card and loan with its minimum payment, due date, APR, and autopay. |
-| ![Payments due](docs/screenshots/15-personal-payments-due.png)<br>**Payments due**: minimums due in the next 30 days, by date, and anything overdue. | ![Spending by merchant](docs/screenshots/16-personal-spending-by-merchant.png)<br>**Spending by merchant**: totals, counts, and averages; click a merchant to see its transactions. |
-
 ## Features
 
 - **Import** aggregator pulls (JSON or CSV tool results), Capital One CSVs, Apple Card CSVs, store-card statement PDFs, and Monarch exports. Every import is idempotent; pending rows are matched to their posted versions. See [docs/importers.md](docs/importers.md).
@@ -150,10 +89,10 @@ Set `whmcs = true` under `[features]` and fill in `[whmcs]` and one `[[whmcs.bra
 
 ## Updates
 
-Installs follow the public snapshot repository (`[update]` in the config: `repo`, `remote`, `branch`; defaults `jclarke/grok-books`, `public`, `main`). A git remote with the `remote` name is used when the clone has one; otherwise the repository URL.
+Installs follow the public snapshot repository (`[update]` in the config: `repo`, `remote`, `branch`; defaults `jclarke/hpg-books`, `public`, `main`). A git remote with the `remote` name is used when the clone has one; otherwise the repository URL.
 
 ```bash
-git remote add public https://github.com/jclarke/grok-books.git   # once, if the clone lacks it
+git remote add public https://github.com/jclarke/hpg-books.git   # once, if the clone lacks it
 bin/hpbooks update check          # exit 0 up to date, 1 update available, 2 error
 bin/hpbooks update apply          # dry run: lists the new commits, changes nothing
 bin/hpbooks update apply --yes    # git fetch + git merge --ff-only
