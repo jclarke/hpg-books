@@ -35,7 +35,7 @@ Skills shipped with the template:
 
 ## Use it with Grok Bot
 
-Open source · runs on your own Grok Bot cloud computer. HPG Books is a private bookkeeping app: business books, personal finances, or both, in one encrypted database.
+Source available · runs on your own Grok Bot cloud computer. HPG Books is a private bookkeeping app: business books, personal finances, or both, in one encrypted database.
 
 Starting from the [Grok Bot template](https://x.ai/bot/gHLmbUpkuYNbv0F-J2JwC) handles step 1 and asks the step 2 questions for you. Without it, from a plain chat:
 
@@ -253,3 +253,7 @@ scripts/publish.sh --push     # publish a new snapshot commit to public/main
 ```
 
 See [docs/publishing.md](docs/publishing.md).
+
+## License
+
+HPG Books is licensed under the [PolyForm Internal Use License 1.0.0](LICENSE.md). It is source-available, not OSI open source: one company or person may use, copy, and modify it for their own internal use.

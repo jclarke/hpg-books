@@ -11,3 +11,6 @@ file:docs/screenshots/*.png
 
 # GitHub Pages site copies of the same demo screenshots; no real data.
 file:site/img/*.png
+
+# The license Required Notice names the copyright holder on purpose (approved by the owner).
+^Required Notice: Copyright 2026 Hosting[ ]Playground[ ]Inc \(https://github\.com/jclarke/hpg-books\)$
