@@ -13,11 +13,12 @@ Grok Bot template ──> Grok Bot installs it ──> Connections ────�
                       on its own cloud          Finance connector (required)        syncs, bills, health,   web app via Tailscale,
                       computer                  Monarch (optional)                  update check            or ask your bot
                                                 Tailscale (optional)
+                                                Website/statements (optional)
 ```
 
 1. **Start from the [Grok Bot template](https://x.ai/bot/gHLmbUpkuYNbv0F-J2JwC).** It brings the app's skills and routines.
 2. **Grok Bot installs it on its own cloud computer**, not your laptop. It creates the encrypted database and asks you a few questions.
-3. **Connections.** The Grok Bot **Finance connector** is where bank and card transactions and balances come from (required for automatic sync). **Monarch** is optional, for accounts the Finance connector doesn't cover. **Tailscale** is optional, for private access to the web app from your devices.
+3. **Connections.** The Grok Bot **Finance connector** is where bank and card transactions and balances come from (required for automatic sync). **Monarch** is optional, for accounts the Finance connector doesn't cover. **Website login or statements** is optional: ask Grok Bot to log in to your bank or card website and grab transactions, or upload PDF/CSV statements for it to import. **Tailscale** is optional, for private access to the web app from your devices.
 4. **The app and its [routines](#grok-bot-routines-to-keep-it-updated) run**: syncs, payment due dates, a health check, and the update check.
 5. **You use it**: open the web app over Tailscale, or just ask your bot.
 
